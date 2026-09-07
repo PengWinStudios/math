@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,19 +7,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
-:root{
-    --bg:#0f172a;
-    --bg2:#1e1b4b;
-    --bg3:#020617;
-    --card:#1e293b;
-    --accent:#f97316;
-    --accent2:#fb923c;
-    --text:#e2e8f0;
-    --muted:#94a3b8;
-    --border:#334155;
-    --success:#22c55e;
-    --danger:#ef4444;
+:root {
+    --bg: #0f172a;
+    --bg2: #1e1b4b;
+    --bg3: #020617;
+    --card: #1e293b;
+    --accent: #f97316;
+    --accent2: #fb923c;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #334155;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --input-bg: #111827;
 }
+
+[data-theme="light"] {
+    --bg: #f8fafc;
+    --bg2: #e2e8f0;
+    --bg3: #cbd5e1;
+    --card: #ffffff;
+    --accent: #ea580c;
+    --accent2: #f97316;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
+    --input-bg: #f1f5f9;
+}
+
 *{ margin:0; padding:0; box-sizing:border-box; }
 body{
     font-family:Inter,sans-serif;
@@ -28,15 +43,35 @@ body{
     color:var(--text);
     min-height:100vh;
     line-height:1.6;
+    transition: background 0.3s, color 0.3s;
 }
 header{ text-align:center; padding:2.5rem 1rem; border-bottom:3px solid var(--accent); position:relative; }
 header h1{ font-size:2.8rem; }
 .subtitle{ color:var(--muted); margin-top:.5rem; }
-.streak{
-    position:absolute; top:20px; right:20px;
-    background:var(--card); padding:8px 16px; border-radius:999px;
-    border:2px solid var(--accent); font-weight:700;
+
+.header-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
+
+.streak {
+    background:var(--card); padding:8px 16px; border-radius:999px;
+    border:2px solid var(--accent); font-weight:700; cursor:pointer;
+    transition:.3s; user-select:none;
+}
+.streak:hover { transform:scale(1.05); }
+
+.more-btn {
+    background:var(--card); padding:8px 16px; border-radius:999px;
+    border:2px solid var(--border); font-weight:700; cursor:pointer;
+    color:var(--text); transition:.3s;
+}
+.more-btn:hover { border-color:var(--accent); }
+
 .container{ max-width:1100px; margin:auto; padding:2rem; }
 .understanding-card{
     background:var(--card);
@@ -46,7 +81,7 @@ header h1{ font-size:2.8rem; }
     margin-bottom:2rem;
 }
 .progress-bar{
-    width:100%; height:28px; background:#111827; border-radius:999px; overflow:hidden;
+    width:100%; height:28px; background:var(--input-bg); border-radius:999px; overflow:hidden;
 }
 .progress-fill{
     width:0%; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:.4s;
@@ -73,32 +108,40 @@ header h1{ font-size:2.8rem; }
 .card h2{ margin:1rem 0 .5rem; }
 .card p{ color:var(--muted); }
 
-.welcome-screen{
+/* Custom Modal Windows */
+.modal-overlay{
     display:none;
     position:fixed;
     inset:0;
-    background:rgba(15,23,42,.97);
+    background:rgba(15,23,42,.92);
+    backdrop-filter: blur(4px);
     justify-content:center;
     align-items:center;
     padding:1rem;
     z-index:999;
     overflow-y:auto;
 }
-.welcome-content{
+.modal-content{
     width:100%;
     max-width:820px;
     background:var(--card);
+    border:2px solid var(--border);
     border-radius:18px;
     padding:2rem;
     max-height:92vh;
     overflow-y:auto;
+    position:relative;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
 }
 .close-btn{
     position:absolute; top:20px; right:20px;
     background:transparent; color:var(--text);
-    border:1px solid var(--border); padding:.75rem 1rem;
-    border-radius:10px; cursor:pointer; font-size:1.4rem;
+    border:1px solid var(--border); padding:.5rem .8rem;
+    border-radius:10px; cursor:pointer; font-size:1.2rem;
+    transition:.2s;
 }
+.close-btn:hover { border-color:var(--accent); color:var(--accent); }
+
 .lesson-section{ margin-bottom:2rem; }
 .lesson-section h3{
     color:var(--accent);
@@ -111,13 +154,13 @@ header h1{ font-size:2.8rem; }
     text-align:center;
     font-weight:800;
     color:var(--accent);
-    background:#111827;
+    background:var(--input-bg);
     padding:1.25rem;
     border-radius:12px;
     margin:1.5rem 0;
 }
 .example{
-    background:#111827;
+    background:var(--input-bg);
     padding:1.25rem;
     border-radius:12px;
     margin:1rem 0;
@@ -127,7 +170,7 @@ header h1{ font-size:2.8rem; }
     display:flex; gap:1rem; margin:1rem 0;
 }
 input[type="text"]{
-    flex:1; padding:1rem; background:#111827;
+    flex:1; padding:1rem; background:var(--input-bg);
     border:2px solid var(--border); border-radius:12px;
     color:var(--text); font-size:1.1rem;
 }
@@ -152,6 +195,78 @@ button:disabled{ background:#475569; cursor:not-allowed; }
 #quiz-container { margin-top: 2rem; }
 #question-text { font-size: 1.3rem; margin-bottom: 1rem; font-weight: 600; }
 #timer-warning { color: var(--muted); font-size: 0.9rem; }
+
+/* Calendar Styles */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 1.5rem;
+}
+.calendar-day-header {
+    text-align: center;
+    font-weight: 700;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding-bottom: 0.5rem;
+}
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    position: relative;
+}
+.calendar-day.practiced {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: var(--success);
+    color: var(--success);
+    font-weight: bold;
+}
+.calendar-day.missed {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+.calendar-day.frozen {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+}
+.calendar-day.today {
+    border: 2px solid var(--accent);
+}
+
+.freeze-badge {
+    background: var(--input-bg);
+    border: 2px solid #38bdf8;
+    color: #38bdf8;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+.btn-secondary {
+    background: var(--border);
+    color: var(--text);
+}
+.btn-secondary:hover {
+    background: var(--muted);
+}
+
 footer{
     text-align:center; color:var(--muted); padding:2rem; font-size:0.9rem;
 }
@@ -161,7 +276,10 @@ footer{
 <header>
     <h1>PengWin Studios</h1>
     <p class="subtitle">One Discovery Per Day • Deep Understanding</p>
-    <div class="streak" id="streak-counter">🔥 0 Day Streak</div>
+    <div class="header-controls">
+        <button class="more-btn" onclick="openMoreModal()">More</button>
+        <div class="streak" id="streak-counter" onclick="openCalendarModal()">🔥 0 Day Streak</div>
+    </div>
 </header>
 <div class="container">
     <div class="understanding-card">
@@ -181,23 +299,76 @@ footer{
     </div>
     <div id="lesson-list" style="display:none;">
         <div style="margin-bottom:1.5rem;">
-            <button onclick="backToSubjects()" style="background:#334155;">← Back to Subjects</button>
+            <button onclick="backToSubjects()" style="background:var(--border);">← Back to Subjects</button>
         </div>
         <h2 id="current-subject-title" style="margin-bottom:1rem;color:var(--accent);"></h2>
         <div class="levels-grid" id="lesson-grid"></div>
     </div>
 </div>
 
-<div class="welcome-screen" id="welcome-screen">
-    <button class="close-btn" onclick="closeLesson()">✕</button>
-    <div class="welcome-content" id="lesson-content"></div>
+<!-- Lesson Window Modal -->
+<div class="modal-overlay" id="welcome-screen">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeLesson()">✕</button>
+        <div id="lesson-content"></div>
+    </div>
 </div>
 
-<footer>PengWin Studios Math • One Concept a Day</footer>
+<!-- Custom Confirmation Prompt Window -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal-content" style="max-width: 480px; text-align: center;">
+        <h3 style="color:var(--accent); margin-bottom:1rem; font-size:1.5rem;">Change Subject?</h3>
+        <p style="font-size:1.1rem; margin-bottom:1.5rem;">Are you sure you want to change subject?</p>
+        <div class="modal-actions" style="justify-content: center;">
+            <button class="btn-secondary" onclick="closeConfirmModal(false)">Cancel</button>
+            <button onclick="closeConfirmModal(true)">Yes, Change</button>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Modal -->
+<div class="modal-overlay" id="calendar-modal">
+    <div class="modal-content" style="max-width: 580px;">
+        <button class="close-btn" onclick="closeModal('calendar-modal')">✕</button>
+        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">Practice Calendar</h2>
+        <div class="freeze-badge" id="freeze-display">
+            ❄️ Streak Freezes Available: 0 / 2
+        </div>
+        <p style="color:var(--muted); font-size:0.9rem; text-align:center;">Earn 1 freeze for every 2 days you practice (Max 2).</p>
+        <div class="calendar-grid" id="calendar-grid-container"></div>
+    </div>
+</div>
+
+<!-- More / Settings Modal -->
+<div class="modal-overlay" id="more-modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <button class="close-btn" onclick="closeModal('more-modal')">✕</button>
+        <h2 style="color:var(--accent); margin-bottom:1.5rem; text-align:center;">Settings & Options</h2>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">Theme Settings</h3>
+            <button style="width:100%; background:var(--border);" onclick="toggleTheme()" id="theme-toggle-btn">
+                Switch to Light Theme ☀️
+            </button>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">Contact & Support</h3>
+            <a href="https://pengwins.my.canva.site/contact/" target="_blank" style="text-decoration:none;">
+                <button style="width:100%;">Visit Contact Page ↗</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer>PengWin Studios Math • One Concept a Day • Nonprofit app</footer>
 
 <script>
 let understanding = parseInt(localStorage.getItem('pengwinMathUnderstanding')) || 0;
 let streak = parseInt(localStorage.getItem('pengwinMathStreak')) || 0;
+let practiceDaysCount = parseInt(localStorage.getItem('pengwinMathPracticeDaysCount')) || 0;
+let freezes = parseInt(localStorage.getItem('pengwinMathFreezes')) || 0;
+let practiceHistory = JSON.parse(localStorage.getItem('pengwinMathHistory')) || {}; // { "YYYY-MM-DD": "practiced" | "frozen" }
 let lastDate = localStorage.getItem('pengwinMathLastDate');
 let lastLessonDate = localStorage.getItem('pengwinMathLastLessonDate') || '';
 let currentSubject = null;
@@ -207,27 +378,7 @@ let currentQuestionIndex = 0;
 let questionStartTime = 0;
 let attemptsOnCurrent = 0;
 let correctFirstTry = 0;
-
-function updateStreak(){
-    const today = new Date().toISOString().split('T')[0];
-    if(lastDate === today) return;
-    
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
-    if(lastDate === yesterdayStr){
-        streak++;
-    } else if(lastDate !== today){
-        streak = 1;
-    }
-    
-    lastDate = today;
-    localStorage.setItem('pengwinMathStreak', streak);
-    localStorage.setItem('pengwinMathLastDate', lastDate);
-    
-    document.getElementById("streak-counter").textContent = `🔥 ${streak} Day Streak`;
-}
+let pendingConfirmCallback = null;
 
 const subjects = [
 {
@@ -713,13 +864,130 @@ function updateUnderstanding(){
     localStorage.setItem('pengwinMathUnderstanding', understanding);
 }
 
-function canDoLessonToday(){
-    const today = new Date().toISOString().split('T')[0];
-    return lastLessonDate !== today;
+function getTodayString() {
+    return new Date().toISOString().split('T')[0];
 }
 
-function confirmConceptSwitch(){
-    return confirm("Are you sure you want to change concept?");
+function updateStreak(){
+    const today = getTodayString();
+    
+    // Check missing days & process freezes
+    if (lastDate && lastDate !== today) {
+        let currentDate = new Date(lastDate);
+        currentDate.setDate(currentDate.getDate() + 1);
+        let todayObj = new Date(today);
+
+        while (currentDate < todayObj) {
+            let dateStr = currentDate.toISOString().split('T')[0];
+            if (!practiceHistory[dateStr]) {
+                if (freezes > 0) {
+                    freezes--;
+                    practiceHistory[dateStr] = "frozen";
+                    localStorage.setItem('pengwinMathFreezes', freezes);
+                } else {
+                    practiceHistory[dateStr] = "missed";
+                    streak = 0;
+                }
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    }
+    
+    localStorage.setItem('pengwinMathStreak', streak);
+    localStorage.setItem('pengwinMathHistory', JSON.stringify(practiceHistory));
+    
+    document.getElementById("streak-counter").textContent = `🔥 ${streak} Day Streak`;
+}
+
+function confirmConceptSwitch(onConfirm) {
+    pendingConfirmCallback = onConfirm;
+    document.getElementById("confirm-modal").style.display = "flex";
+}
+
+function closeConfirmModal(confirmed) {
+    document.getElementById("confirm-modal").style.display = "none";
+    if (confirmed && pendingConfirmCallback) {
+        pendingConfirmCallback();
+    }
+    pendingConfirmCallback = null;
+}
+
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = "flex";
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = "none";
+}
+
+function openMoreModal() {
+    openModal("more-modal");
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('pengwinMathTheme', newTheme);
+    
+    const btn = document.getElementById('theme-toggle-btn');
+    btn.textContent = newTheme === 'light' ? 'Switch to Dark Theme 🌙' : 'Switch to Light Theme ☀️';
+}
+
+function openCalendarModal() {
+    document.getElementById('freeze-display').textContent = `❄️ Streak Freezes Available: ${freezes} / 2`;
+    
+    const grid = document.getElementById('calendar-grid-container');
+    grid.innerHTML = '';
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    days.forEach(d => {
+        const header = document.createElement('div');
+        header.className = 'calendar-day-header';
+        header.textContent = d;
+        grid.appendChild(header);
+    });
+    
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 27); 
+    
+    const padDays = startDate.getDay();
+    for (let i = 0; i < padDays; i++) {
+        const empty = document.createElement('div');
+        grid.appendChild(empty);
+    }
+    
+    for (let i = 0; i < 28; i++) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+        const dateStr = d.toISOString().split('T')[0];
+        
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        
+        if (dateStr === getTodayString()) {
+            dayEl.classList.add('today');
+        }
+        
+        const status = practiceHistory[dateStr];
+        if (status === 'practiced') {
+            dayEl.classList.add('practiced');
+            dayEl.innerHTML = `${d.getDate()}<br><small>✓</small>`;
+        } else if (status === 'frozen') {
+            dayEl.classList.add('frozen');
+            dayEl.innerHTML = `${d.getDate()}<br><small>❄️</small>`;
+        } else if (status === 'missed' || (d < today && dateStr !== getTodayString())) {
+            dayEl.classList.add('missed');
+            dayEl.innerHTML = `${d.getDate()}<br><small>✕</small>`;
+        } else {
+            dayEl.innerHTML = `${d.getDate()}`;
+        }
+        
+        grid.appendChild(dayEl);
+    }
+    
+    openModal('calendar-modal');
 }
 
 function showSubjectSelection(){
@@ -733,9 +1001,10 @@ function showSubjectSelection(){
         card.innerHTML = `<h2>${subject.name}</h2><p>${subject.lessons.length} Lessons Available</p>`;
         card.onclick = () => {
             if(currentSubject && currentSubject.id !== subject.id){
-                if(!confirmConceptSwitch()) return;
+                confirmConceptSwitch(() => showSubjectLessons(subject));
+            } else {
+                showSubjectLessons(subject);
             }
-            showSubjectLessons(subject);
         };
         grid.appendChild(card);
     });
@@ -754,14 +1023,11 @@ function showSubjectLessons(subject){
         card.className = "card";
         card.innerHTML = `<div style="font-size:2.5rem;font-weight:800;color:var(--accent);">${lesson.id}</div><h2>${lesson.name}</h2>`;
         card.onclick = () => {
-            if(!canDoLessonToday()){
-                alert("You've completed your 1 concept discovery for today! Return tomorrow to continue building mastery.");
-                return;
-            }
             if(currentLesson && currentLesson.id !== lesson.id){
-                if(!confirmConceptSwitch()) return;
+                confirmConceptSwitch(() => showLesson(lesson));
+            } else {
+                showLesson(lesson);
             }
-            showLesson(lesson);
         };
         grid.appendChild(card);
     });
@@ -769,15 +1035,18 @@ function showSubjectLessons(subject){
 
 function backToSubjects(){
     if(currentSubject || currentLesson){
-        if(!confirmConceptSwitch()) return;
+        confirmConceptSwitch(() => {
+            currentSubject = null;
+            currentLesson = null;
+            showSubjectSelection();
+        });
+    } else {
+        showSubjectSelection();
     }
-    currentSubject = null;
-    currentLesson = null;
-    showSubjectSelection();
 }
 
 function createLessonHTML(lesson){
-    let questionsPreviewHTML = `<div class="lesson-section" style="background:#1e293b; padding:1rem; border-radius:12px; border:1px solid var(--border);">
+    let questionsPreviewHTML = `<div class="lesson-section" style="background:var(--input-bg); padding:1rem; border-radius:12px; border:1px solid var(--border);">
         <h4 style="color:var(--accent2); margin-bottom:0.5rem;">Lesson Questions Overview</h4><ol style="padding-left:1.2rem;">`;
     lesson.questions.forEach((qObj) => {
         questionsPreviewHTML += `<li style="margin-bottom:0.4rem;">${qObj.q}</li>`;
@@ -815,7 +1084,7 @@ function startQuiz(lessonId){
             <div id="timer-warning">Analyze the math framework carefully before committing.</div>
             <div id="feedback-area" style="margin-top:1rem;"></div>
         </div>
-        <button onclick="closeLesson()" style="background:#334155;margin-top:1.5rem;">Exit Lesson Interface</button>
+        <button onclick="closeLesson()" style="background:var(--border);margin-top:1.5rem;">Exit Lesson Interface</button>
     `;
     loadCurrentQuestion();
 }
@@ -898,16 +1167,47 @@ function finishQuiz(){
     understanding += gain;
     updateUnderstanding();
     
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem('pengwinMathLastLessonDate', today);
-    lastLessonDate = today;
+    const today = getTodayString();
+    
+    if (practiceHistory[today] !== 'practiced') {
+        if (lastDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            if (lastDate === yesterdayStr || practiceHistory[yesterdayStr] === 'frozen') {
+                streak++;
+            } else {
+                streak = 1;
+            }
+        }
+        
+        practiceHistory[today] = 'practiced';
+        practiceDaysCount++;
+        
+        if (practiceDaysCount % 2 === 0 && freezes < 2) {
+            freezes++;
+        }
+        
+        lastDate = today;
+        lastLessonDate = today;
+        
+        localStorage.setItem('pengwinMathLastDate', lastDate);
+        localStorage.setItem('pengwinMathLastLessonDate', lastLessonDate);
+        localStorage.setItem('pengwinMathStreak', streak);
+        localStorage.setItem('pengwinMathFreezes', freezes);
+        localStorage.setItem('pengwinMathPracticeDaysCount', practiceDaysCount);
+        localStorage.setItem('pengwinMathHistory', JSON.stringify(practiceHistory));
+        
+        document.getElementById("streak-counter").textContent = `🔥 ${streak} Day Streak`;
+    }
     
     document.getElementById("lesson-content").innerHTML = `
-        <div style="padding:1.5rem; background:#111827; border-radius:12px; border:2px solid var(--success);">
+        <div style="padding:1.5rem; background:var(--input-bg); border-radius:12px; border:2px solid var(--success);">
             <h3>Module Discovery Complete!</h3>
             <p style="margin:0.5rem 0;">You cleared ${correctFirstTry} out of ${currentQuestions.length} checks successfully on your primary attempt.</p>
             <p style="color:var(--accent2); font-weight:700;">+${gain} Performance Understanding Rating added to metrics.</p>
-            <p style="margin-top:0.5rem; color:var(--muted);">You have completed your 1 concept for today! See you tomorrow.</p>
+            <p style="margin-top:0.5rem; color:var(--muted);">You completed your concept discovery for today!</p>
             <button class="next-btn" onclick="closeLesson()" style="width:100%; padding:1rem; margin-top:1rem;">Sync Progress & Close Module</button>
         </div>
     `;
@@ -927,13 +1227,17 @@ function showLesson(lesson){
 }
 
 function closeLesson(){
-    if(currentLesson && lastLessonDate !== new Date().toISOString().split('T')[0]){
-        if(!confirmConceptSwitch()) return;
-    }
     document.getElementById("welcome-screen").style.display = "none";
 }
 
 window.onload = () => {
+    const savedTheme = localStorage.getItem('pengwinMathTheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+        themeBtn.textContent = savedTheme === 'light' ? 'Switch to Dark Theme 🌙' : 'Switch to Light Theme ☀️';
+    }
+
     updateStreak();
     updateUnderstanding();
     showSubjectSelection();
