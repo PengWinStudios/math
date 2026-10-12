@@ -1,2 +1,2 @@
 # MathApp
-This is a beta version of an app that teaches math. Made with HTML.
+(Mathematics Application) This the current newest version of this app. Made with HTML. An app taught to tech you math.
