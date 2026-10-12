@@ -279,6 +279,7 @@ footer{
     <p class="subtitle">Prioritizes what you don't know — "Recommended" highlights items you may have missed.</p>
     <div class="header-controls">
         <button class="more-btn" onclick="openMoreModal()">More</button>
+        <button id="recommended-btn" class="more-btn" style="display:none;" onclick="openRecommended()">Recommended lessons</button>
         <div class="streak" id="streak-counter" onclick="openCalendarModal()">🔥 0 Day Streak</div>
     </div>
 </header>
@@ -385,9 +386,42 @@ let attemptsOnCurrent = 0;
 let correctFirstTry = 0;
 let pendingConfirmCallback = null;
 
-// existing subjects data (truncated here in file for brevity)
+// Partial subjects data restored so lessons render (includes Arithmetic & Pre-Algebra examples)
 const subjects = [
-    // ... (same lesson data as before) 
+{
+    id: "arithmetic",
+    name: "Arithmetic",
+    lessons: [
+        {id:1, name:"Addition Mastery", equation:"7 + 5 = 12", intro:"Addition joins quantities.", fullExplanation:`<p><strong>Addition</strong> is combining sets of numbers together.</p>`,
+         questions: [
+            {q: "What is 23 + 48?", a: "71", hint: "Add tens first: 20 + 40 = 60, then units: 3 + 8 = 11."},
+            {q: "15 + 27 = ?", a: "42", hint: "Break 27 down into 20 + 7."}
+         ]},
+        {id:2, name:"Subtraction Exploration", equation:"12 - 5 = 7", intro:"Subtraction finds the difference between numbers.", fullExplanation:`<p>Removing items from a collection.</p>`,
+         questions: [
+            {q: "45 - 27 = ?", a: "18", hint: "Subtract 20 first to get 25, then subtract 7."}
+         ]}
+    ]
+},
+{
+    id: "prealgebra",
+    name: "Pre-Algebra",
+    lessons: [
+        {id:1, name:"Exponents", equation:"2^3 = 8", intro:"Repeated base multiplication scaling.", fullExplanation:`<p>Exponents instruct you to multiply a base number by itself a designated number of times.</p>`,
+         questions: [
+            {q: "What is 3³?", a: "27", hint: "3 × 3 × 3."},
+            {q: "2^5 = ?", a: "32", hint: "Double two exponentially: 2, 4, 8, 16..."}
+         ]},
+        {id:2, name:"Negative Numbers", equation:"-5 + 8 = 3", intro:"Values existing past zero threshold.", fullExplanation:`<p>Negative values show debt or directional opposite offsets.</p>`,
+         questions: [
+            {q: "-12 + 7 = ?", a: "-5", hint: "You owe 12, pay back 7. You are still down by 5."}
+         ]},
+        {id:3, name:"Variables introduction", equation:"x + 5 = 12 => x = 7", intro:"Using placeholder markers for unknown variables.", fullExplanation:`<p>Variables act as placeholders for unknown values.</p>`,
+         questions: [
+            {q: "If x + 8 = 15, what is x?", a: "7", hint: "Subtract 8 from both sides of the equation balance."}
+         ]}
+    ]
+}
 ];
 
 function getRank(){
@@ -584,6 +618,8 @@ function showSubjectSelection(){
         card.onclick = () => { showLessonList(subject.id); };
         grid.appendChild(card);
     });
+
+    updateRecommendedButtonVisibility();
 }
 
 // Make completed lessons appear faded when rendering lesson list
@@ -624,6 +660,7 @@ function removeFromRecommended(subjectId, lessonId) {
     let recommended = JSON.parse(localStorage.getItem('pengwinMathRecommended') || '[]');
     recommended = recommended.filter(r => !(r.subjectId === subjectId && r.lessonId === lessonId));
     localStorage.setItem('pengwinMathRecommended', JSON.stringify(recommended));
+    updateRecommendedButtonVisibility();
 }
 
 // When user answers incorrectly elsewhere in the app, call this to add to Recommended
@@ -632,29 +669,34 @@ function addToRecommended(subjectId, lessonId) {
     const exists = recommended.some(r => r.subjectId === subjectId && r.lessonId === lessonId);
     if(!exists) {
         recommended.unshift({subjectId, lessonId});
-        // keep max 10
-        recommended = recommended.slice(0,10);
+        // keep max 12
+        recommended = recommended.slice(0,12);
         localStorage.setItem('pengwinMathRecommended', JSON.stringify(recommended));
     }
+    updateRecommendedButtonVisibility();
 }
 
-// Minimal openLesson/closeLesson stubs to integrate with the modal behavior
-function openLesson(subjectId, lessonId) {
+// Populate recommended with other lessons from the same subject (called after completing a lesson)
+function populateRecommendedFromSubject(subjectId, excludeLessonId) {
     const subj = subjects.find(s => s.id === subjectId);
     if(!subj) return;
-    const les = subj.lessons.find(l => l.id === lessonId);
-    if(!les) return;
-    currentLesson = { subjectId, lessonId };
-    const content = document.getElementById('lesson-content');
-    content.innerHTML = `<div class="lesson-section"><h3>${les.name}</h3><div class="equation">${les.equation || ''}</div><div class="example">${les.intro || ''}</div></div>`;
-    openModal('welcome-screen');
+    const completed = JSON.parse(localStorage.getItem('pengwinMathCompleted') || '[]');
+    let recommended = JSON.parse(localStorage.getItem('pengwinMathRecommended') || '[]');
+    // add up to 4 other lessons not completed and not excluded
+    for(const les of subj.lessons) {
+        if(les.id === excludeLessonId) continue;
+        const key = `${subjectId}-${les.id}`;
+        if(completed.includes(key)) continue;
+        if(!recommended.some(r => r.subjectId === subjectId && r.lessonId === les.id)) {
+            recommended.push({subjectId, lessonId: les.id});
+            if(recommended.length >= 12) break;
+        }
+    }
+    localStorage.setItem('pengwinMathRecommended', JSON.stringify(recommended));
+    updateRecommendedButtonVisibility();
 }
 
-function closeLesson(){
-    closeModal('welcome-screen');
-}
-
-// Example function to mark a lesson as completed (used after successful practice)
+// When user completes a lesson, call this
 function markLessonCompleted(subjectId, lessonId) {
     let completed = JSON.parse(localStorage.getItem('pengwinMathCompleted') || '[]');
     const key = `${subjectId}-${lessonId}`;
@@ -662,6 +704,59 @@ function markLessonCompleted(subjectId, lessonId) {
         completed.push(key);
         localStorage.setItem('pengwinMathCompleted', JSON.stringify(completed));
     }
+    // populate recommended lessons from same subject
+    populateRecommendedFromSubject(subjectId, lessonId);
+}
+
+function openLesson(subjectId, lessonId) {
+    const subj = subjects.find(s => s.id === subjectId);
+    if(!subj) return;
+    const les = subj.lessons.find(l => l.id === lessonId);
+    if(!les) return;
+    currentLesson = { subjectId, lessonId };
+    const content = document.getElementById('lesson-content');
+    content.innerHTML = `<div class="lesson-section"><h3>${les.name}</h3><div class="equation">${les.equation || ''}</div><div class="example">${les.intro || ''}</div><div style="margin-top:1rem;"><button onclick="markLessonCompleted('${subjectId}', ${lessonId});" class="start-btn">Mark as Completed</button></div></div>`;
+    openModal('welcome-screen');
+}
+
+function closeLesson(){
+    closeModal('welcome-screen');
+}
+
+function updateRecommendedButtonVisibility() {
+    const recommended = JSON.parse(localStorage.getItem('pengwinMathRecommended') || '[]');
+    const completed = JSON.parse(localStorage.getItem('pengwinMathCompleted') || '[]');
+    const btn = document.getElementById('recommended-btn');
+    if(!btn) return;
+    if(recommended.length > 0 || completed.length >= 2) {
+        btn.style.display = 'inline-flex';
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+function openRecommended() {
+    // Show subject selection and reveal the recommended section
+    showSubjectSelection();
+    // scroll to recommended section if present
+    const sec = document.getElementById('recommended-section');
+    if(sec && sec.style.display !== 'none') {
+        // ensure it's visible and scroll to it
+        setTimeout(() => { sec.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 60);
+    } else {
+        // if no recommended items, show a modal explaining why
+        const modal = document.getElementById('more-modal');
+        const content = modal.querySelector('.modal-content');
+        content.innerHTML = `<button class="close-btn" onclick="closeModal('more-modal')">✕</button><h3 style=\"color:var(--accent)\">Recommended lessons</h3><p style=\"color:var(--muted)\">No recommended lessons yet — complete lessons or answer incorrectly to get recommendations.</p>`;
+        openModal('more-modal');
+    }
+}
+
+// Example function to simulate getting an answer wrong and adding whole topic recommendations
+function recordWrongAnswer(subjectId, lessonId) {
+    // add the same lesson back to recommended (so user can retry) and also other lessons in the subject
+    addToRecommended(subjectId, lessonId);
+    populateRecommendedFromSubject(subjectId, lessonId);
 }
 
 // Initialize UI state on load
@@ -672,6 +767,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('pengwinMathTheme');
     if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
     showSubjectSelection();
+    updateRecommendedButtonVisibility();
 });
 </script>
 </body>
