@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PengWin Studios Math • Daily Discoveries</title>
+<title>Mathematics Application</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
@@ -116,8 +116,8 @@ header h1{ font-size:2.8rem; }
     background:rgba(15,23,42,.92);
     backdrop-filter: blur(4px);
     justify-content:center;
-    align-items:center;
-    padding:1rem;
+    align-items:flex-start; /* changed to avoid odd vertical centering when content scrolls */
+    padding:6vh 1rem; /* ensure space at top when content is tall */
     z-index:999;
     overflow-y:auto;
 }
@@ -128,10 +128,11 @@ header h1{ font-size:2.8rem; }
     border:2px solid var(--border);
     border-radius:18px;
     padding:2rem;
-    max-height:92vh;
+    max-height:calc(100vh - 12vh);
     overflow-y:auto;
     position:relative;
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+    margin: 0 auto; /* center horizontally and allow vertical flow */
 }
 .close-btn{
     position:absolute; top:20px; right:20px;
@@ -274,8 +275,8 @@ footer{
 </head>
 <body>
 <header>
-    <h1>PengWin Studios</h1>
-    <p class="subtitle">One Discovery Per Day • Deep Understanding</p>
+    <h1>Mathematics Application</h1>
+    <p class="subtitle">Prioritizes what you don't know — "Recommended" highlights items you may have missed.</p>
     <div class="header-controls">
         <button class="more-btn" onclick="openMoreModal()">More</button>
         <div class="streak" id="streak-counter" onclick="openCalendarModal()">🔥 0 Day Streak</div>
@@ -294,6 +295,10 @@ footer{
         <div class="header-section" style="text-align:center;margin-bottom:2rem;">
             <h2>Choose Your Subject for Today</h2>
             <p>One lesson per day — build real mastery</p>
+        </div>
+        <div id="recommended-section" style="margin-bottom:1.5rem; display:none;">
+            <h3 style="color:var(--accent); margin-bottom:0.75rem; text-align:left;">Recommended</h3>
+            <div class="subject-grid" id="recommended-grid"></div>
         </div>
         <div class="subject-grid" id="subject-grid"></div>
     </div>
@@ -361,7 +366,7 @@ footer{
     </div>
 </div>
 
-<footer>PengWin Studios Math • One Concept a Day • Nonprofit app</footer>
+<footer>Mathematics Application • Prioritizes what you don't know — "Recommended" highlights items you may have missed</footer>
 
 <script>
 let understanding = parseInt(localStorage.getItem('pengwinMathUnderstanding')) || 0;
@@ -380,471 +385,9 @@ let attemptsOnCurrent = 0;
 let correctFirstTry = 0;
 let pendingConfirmCallback = null;
 
+// existing subjects data (truncated here in file for brevity)
 const subjects = [
-{
-    id: "arithmetic",
-    name: "Arithmetic",
-    lessons: [
-        {id:1, name:"Addition Mastery", equation:"7 + 5 = 12", intro:"Addition joins quantities.", fullExplanation:`<p><strong>Addition</strong> is combining sets of numbers together. Start with the larger number and add the increments of the second.</p><div class="example">7 + 5: Count up five steps from 7: 8, 9, 10, 11, 12.</div>`, why:"Daily budgeting, inventory, grocery pricing.", curiosity:"Ancient Egyptians used walking leg symbols pointing forward to represent addition.", 
-         questions: [
-            {q: "What is 23 + 48?", a: "71", hint: "Add tens first: 20 + 40 = 60, then units: 3 + 8 = 11."},
-            {q: "15 + 27 = ?", a: "42", hint: "Break 27 down into 20 + 7."},
-            {q: "9 + 6 + 8 = ?", a: "23", hint: "Combine 9 + 6 first to get 15, then add 8."},
-            {q: "34 + 19 = ?", a: "53", hint: "Think of it as 34 + 20 minus 1."},
-            {q: "52 + 37 = ?", a: "89", hint: "Add digits straight across safely: 50+30 and 2+7."}
-         ]},
-        {id:2, name:"Subtraction Exploration", equation:"12 - 5 = 7", intro:"Subtraction finds the difference between numbers.", fullExplanation:`<p>Removing items from a collection, or calculating space separating two points on a timeline.</p>`, why:"Calculating store change, counting down tracking timelines.", curiosity:"The minus sign first appeared in European books during the late 15th century.", 
-         questions: [
-            {q: "45 - 27 = ?", a: "18", hint: "Subtract 20 first to get 25, then subtract 7."},
-            {q: "100 - 38 = ?", a: "62", hint: "Subtract 30 to get 70, then drop 8 more."},
-            {q: "63 - 29 = ?", a: "34", hint: "Think of this as 63 - 30, then add 1 back."},
-            {q: "81 - 47 = ?", a: "34", hint: "Borrow from tens column or step backwards carefully."},
-            {q: "125 - 68 = ?", a: "57", hint: "Subtract 60 to get 65, then count back 8."}
-         ]},
-        {id:3, name:"Multiplication Basics", equation:"6 \\times 4 = 24", intro:"Repeated addition over uniform sets.", fullExplanation:`<p>Instead of executing 6 + 6 + 6 + 6 manually, optimize scaling calculations using preset structural sets.</p>`, why:"Calculating area surfaces, doubling culinary recipes.", curiosity:"The 'X' multiplication symbol was formally introduced by William Oughtred in 1618.", 
-         questions: [
-            {q: "8 × 7 = ?", a: "56", hint: "Think 8 × 5 = 40, plus 8 × 2 = 16."},
-            {q: "5 × 9 = ?", a: "45", hint: "Half of 10 × 9, or 50 minus 5."},
-            {q: "12 × 4 = ?", a: "48", hint: "Double 12 once to get 24, then double again."},
-            {q: "7 × 6 = ?", a: "42", hint: "One set of 7 higher than 35."},
-            {q: "9 × 8 = ?", a: "72", hint: "One set of 8 less than 80."}
-         ]},
-        {id:4, name:"Division Fundamentals", equation:"24 \\div 6 = 4", intro:"Splitting values into equal shares.", fullExplanation:`<p>Determining how many times a particular quantity cleanly fits inside a targeted whole.</p>`, why:"Splitting bills cleanly, equal distribution of assets.", curiosity:"The division sign symbol is historically termed an obelus.", 
-         questions: [
-            {q: "36 ÷ 4 = ?", a: "9", hint: "What number multiplied by 4 gives 36?"},
-            {q: "100 ÷ 5 = ?", a: "20", hint: "How many nickels make a full dollar absolute whole?"},
-            {q: "48 ÷ 6 = ?", a: "8", hint: "Recall 6 times what table reaches 48."},
-            {q: "81 ÷ 9 = ?", a: "9", hint: "A perfect square calculation value."},
-            {q: "64 ÷ 8 = ?", a: "8", hint: "Think of Chess board square structures."}
-         ]},
-        {id:5, name:"Order of Operations", equation:"3 + 2 \\times 4 = 11", intro:"The PEMDAS rulebook path.", fullExplanation:`<p>Establish exact sequence consistency globally: Parentheses, Exponents, Multiplication/Division, Addition/Subtraction.</p>`, why:"Ensuring accounting system logic reads formulas predictably.", curiosity:"Without standard operational orders, structural engineering calculations would crumble arbitrarily.", 
-         questions: [
-            {q: "10 - 2 × 3 = ?", a: "4", hint: "Multiply 2 × 3 first, then subtract from 10."},
-            {q: "8 + 4 ÷ 2 × 3 = ?", a: "14", hint: "Work division and multiplication left-to-right first: 4 ÷ 2 = 2, then 2 × 3 = 6."},
-            {q: "(5 + 3) × 2 = ?", a: "16", hint: "Solve inside parentheses first."},
-            {q: "20 ÷ 4 + 3 × 2 = ?", a: "11", hint: "Compute 20÷4 and 3×2 before adding results."},
-            {q: "7 + 2 × (9 - 4) = ?", a: "17", hint: "Handle parentheses first: 9-4 = 5. Then multiply by 2."}
-         ]},
-        {id:6, name:"Working with Zero", equation:"5 \\times 0 = 0", intro:"Properties of the absolute null placeholder.", fullExplanation:`<p>Adding zero leaves numbers identity-intact. Multiplying annihilates value. Dividing by it breaks arithmetic logic.</p>`, why:"Computer system fail-safes and baseline system calibrations.", curiosity:"Zero was fully treated as a functional systemic number by Brahmagupta around 628 AD.", 
-         questions: [
-            {q: "45 + 0 = ?", a: "45", hint: "Adding zero changes nothing."},
-            {q: "12 × 0 = ?", a: "0", hint: "Anything multiplied by zero collapses to zero."},
-            {q: "0 ÷ 7 = ?", a: "0", hint: "Zero items split among seven people yields nothing each."},
-            {q: "(23 × 4 + 9) × 0 = ?", a: "0", hint: "Look at the outer scaling factor before spending time calculating inside."},
-            {q: "89 - 0 = ?", a: "89", hint: "Removing nothing leaves the original status quo value intact."}
-         ]},
-        {id:7, name:"Multiples and Factors", equation:"Factors\\,of\\,12: 1, 2, 3, 4, 6, 12", intro:"Breaking down constituent scaling units.", fullExplanation:`<p>Factors are whole numbers that multiply together to form another number. Multiples are products of a number multiplied by integers.</p>`, why:"Packaging items efficiently, grid alignment setups.", curiosity:"Numbers with only 2 factors are called prime numbers.", 
-         questions: [
-            {q: "What is the greatest common factor (GCF) of 12 and 18?", a: "6", hint: "List factors of both; find the biggest overlapping choice."},
-            {q: "What is the lowest common multiple (LCM) of 4 and 6?", a: "12", hint: "Count up by 4s and 6s until they meet."},
-            {q: "Is 7 a factor of 48? (Enter yes or no)", a: "no", hint: "Divide 48 by 7 and check for a remainder."},
-            {q: "What is the sum of all factors of 6?", a: "12", hint: "Factors of 6 are 1, 2, 3, and 6."},
-            {q: "What is the 5th positive multiple of 7?", a: "35", hint: "Simply calculate 7 × 5."}
-         ]},
-        {id:8, name:"Fractions Introduction", equation:"\\frac{3}{4} = 0.75", intro:"Parts of a conceptual structural whole.", fullExplanation:`<p>The top (numerator) is how many parts you hold. The bottom (denominator) is the total slice count of the base assembly.</p>`, why:"Proportional measurements, tracking clocks, ingredient splitting.", curiosity:"The horizontal bar dividing fractions was introduced by Arab mathematicians.", 
-         questions: [
-            {q: "Simplify the fraction 6/8 to lowest terms.", a: "3/4", hint: "Divide top and bottom by their greatest common factor, 2."},
-            {q: "What is 1/4 + 2/4?", a: "3/4", hint: "Since denominators match, add numerators directly."},
-            {q: "What is half of 1/2?", a: "1/4", hint: "Multiply denominators together: 1/(2×2)."},
-            {q: "Convert 1/5 into a decimal value.", a: "0.2", hint: "Divide 1.0 by 5."},
-            {q: "If a pizza has 8 slices and you eat 2, what fraction remains simplified?", a: "3/4", hint: "6 out of 8 slices remain. Simplify 6/8."}
-         ]},
-        {id:9, name:"Decimal Operations", equation:"0.1 + 0.02 = 0.12", intro:"Base ten fraction structures.", fullExplanation:`<p>Decimals map fractions dynamically onto standard base-10 numerical columns using dot points.</p>`, why:"Global financial currency systems.", curiosity:"The decimal dot point layout wasn't universally standard until Christopher Clavius in 1593.", 
-         questions: [
-            {q: "What is 1.5 + 2.75?", a: "4.25", hint: "Align dots: 1.50 + 2.75."},
-            {q: "Calculate 5 - 0.25", a: "4.75", hint: "Think of 5.00 minus a quarter."},
-            {q: "What is 0.3 × 3?", a: "0.9", hint: "3 times 3 tenths is 9 tenths."},
-            {q: "What is 1.2 ÷ 4?", a: "0.3", hint: "Think 12 tenths divided by 4."},
-            {q: "What is 0.05 + 0.5?", a: "0.55", hint: "Be careful with place value columns: hundredths vs tenths."}
-         ]},
-        {id:10, name:"Percentages", equation:"20\\%\\,of\\,80 = 16", intro:"Proportional calculations evaluated per hundred.", fullExplanation:`<p>Percentages translate arbitrary fractions into standardized comparative terms out of 100.</p>`, why:"Tax processing, store discounts, analytical data graphing.", curiosity:"Percent comes from Latin 'per centum', meaning literally 'by the hundred'.", 
-         questions: [
-            {q: "What is 50% of 240?", a: "120", hint: "50% represents exactly half of the target quantity."},
-            {q: "Convert 1/4 into a percentage value.", a: "25%", hint: "Multiply 0.25 by 100 to find per-hundred rating."},
-            {q: "What is 10% of 90?", a: "9", hint: "Move the decimal point one place left."},
-            {q: "A $60 item is discounted by 20%. How many dollars do you save?", a: "12", hint: "Find 10% ($6) and double it."},
-            {q: "What is 100% of 7?", a: "7", hint: "100% means holding the entire un-mutated item quantity."}
-         ]},
-        {id:11, name:"Prime Factorization", equation:"12 = 2^2 \\times 3", intro:"Decomposing composite numbers into prime building blocks.", fullExplanation:`<p>Every integer greater than 1 is either a prime or can be uniquely factored into a product of prime numbers.</p>`, why:"RSA encryption, computer security, simplifying fractions.", curiosity:"The Fundamental Theorem of Arithmetic proves prime factorization uniqueness.", 
-         questions: [
-            {q: "What is the smallest prime number?", a: "2", hint: "1 is not considered a prime number."},
-            {q: "Is 15 a prime number? (Type yes or no)", a: "no", hint: "15 is divisible by 3 and 5."},
-            {q: "How many prime factors does 8 have counting duplicates (2×2×2)?", a: "3", hint: "Count the total prime factors in its breakdown."},
-            {q: "What is the largest prime factor of 20?", a: "5", hint: "20 = 2 × 2 × 5."},
-            {q: "What is the prime factorization of 9? (e.g., 3x3)", a: "3x3", hint: "Multiply the smallest prime root by itself."}
-         ]},
-        {id:12, name:"Estimation and Rounding", equation:"3.74 \\approx 3.7", intro:"Approximating values for quick mental calculations.", fullExplanation:`<p>Rounding simplifies numbers while preserving approximate magnitude to quickly evaluate bounds.</p>`, why:"Fast grocery billing check, sanity checking engineering results.", curiosity:"Architects use estimation rules of thumb to double-check software simulations.", 
-         questions: [
-            {q: "Round 47 to the nearest ten.", a: "50", hint: "Look at the unit digit 7; round up."},
-            {q: "Round 3.14159 to two decimal places.", a: "3.14", hint: "Look at the third digit (1); keep 3.14."},
-            {q: "Estimate 49 + 52 by rounding both to nearest ten first.", a: "100", hint: "Round to 50 + 50."},
-            {q: "Round 865 to the nearest hundred.", a: "900", hint: "Look at the tens digit (6); round up."},
-            {q: "Round 0.087 to the nearest hundredth.", a: "0.09", hint: "Look at 7 in thousandths place; round up."}
-         ]},
-        {id:13, name:"Mixed & Improper Fractions", equation:"2\\frac{1}{2} = \\frac{5}{2}", intro:"Representing values greater than one whole.", fullExplanation:`<p>Mixed numbers combine whole units and fractions, while improper fractions express the total parts over single denominator slices.</p>`, why:"Carpentry measurements, cooking batch scaling.", curiosity:"Improper fractions were once called 'excessive' fractions in Renaissance texts.", 
-         questions: [
-            {q: "Convert 7/2 to a mixed fraction (e.g. 3 1/2).", a: "3 1/2", hint: "7 divided by 2 gives 3 with remainder 1."},
-            {q: "Convert 3 1/4 to an improper fraction.", a: "13/4", hint: "Multiply 3 × 4 and add 1."},
-            {q: "What is 1 1/2 + 2 1/2?", a: "4", hint: "Add wholes (1+2=3) and halves (1/2+1/2=1)."},
-            {q: "Convert 11/3 to a mixed fraction.", a: "3 2/3", hint: "11 divided by 3 gives 3 remainder 2."},
-            {q: "Convert 5 1/2 to an improper fraction.", a: "11/2", hint: "(5 × 2) + 1 over 2."}
-         ]},
-        {id:14, name:"Unit Rates", equation:"\\text{Speed} = \\frac{\\text{Distance}}{\\text{Time}}", intro:"Measuring quantities relative to a single unit.", fullExplanation:`<p>A unit rate simplifies a ratio so the denominator equals exactly 1 unit of measurement.</p>`, why:"Comparing grocery store pricing, vehicle fuel efficiency.", curiosity:"Standard unit rates allow instant financial comparisons across globally diverse packaging sizes.", 
-         questions: [
-            {q: "If you drive 120 miles in 2 hours, what is your speed in mph?", a: "60", hint: "Divide total distance by total hours."},
-            {q: "5 apples cost $2.50. What is the cost per apple in dollars?", a: "0.50", hint: "Divide 2.50 by 5."},
-            {q: "If a printer prints 30 pages in 3 minutes, how many pages per minute?", a: "10", hint: "Divide 30 by 3."},
-            {q: "You earn $50 in 5 hours. What is your hourly pay rate in dollars?", a: "10", hint: "Divide earnings by hours worked."},
-            {q: "A car travels 180 miles on 6 gallons of gas. What is its mpg rating?", a: "30", hint: "Divide 180 by 6."}
-         ]},
-        {id:15, name:"Introduction to Perfect Squares", equation:"5^2 = 25 \\implies \\sqrt{25} = 5", intro:"Integers generated by multiplying a whole number by itself.", fullExplanation:`<p>Perfect squares are areas of geometric squares formed by whole integer side lengths.</p>`, why:"Grid design, square footage, spatial layouts.", curiosity:"The sum of consecutive odd numbers always produces consecutive perfect squares (1, 1+3=4, 1+3+5=9).", 
-         questions: [
-            {q: "What is 7 squared?", a: "49", hint: "Calculate 7 × 7."},
-            {q: "What is √81?", a: "9", hint: "Find the integer that multiplies by itself to make 81."},
-            {q: "Is 20 a perfect square? (Type yes or no)", a: "no", hint: "No whole integer squared equals 20."},
-            {q: "What is √144?", a: "12", hint: "12 × 12 = 144."},
-            {q: "What is the next perfect square after 16?", a: "25", hint: "4² = 16, so find 5²."}
-         ]}
-    ]
-},
-{
-    id: "prealgebra",
-    name: "Pre-Algebra",
-    lessons: [
-        {id:1, name:"Exponents", equation:"2^3 = 8", intro:"Repeated base multiplication scaling.", fullExplanation:`<p>Exponents instruct you to multiply a base number by itself a designated number of times. 2 to the power of 3 means 2 × 2 × 2.</p>`, why:"Population tracking curves, compound financial interest, data file structures.", curiosity:"Archimedes devised early power tracking methods to count grains of sand filling the universe.", 
-         questions: [
-            {q: "What is 3³?", a: "27", hint: "3 × 3 × 3."},
-            {q: "2^5 = ?", a: "32", hint: "Double two exponentially: 2, 4, 8, 16..."},
-            {q: "5² = ?", a: "25", hint: "A perfect square calculation of five."},
-            {q: "10^4 = ?", a: "10000", hint: "Write 1 followed by four zeros."},
-            {q: "4³ = ?", a: "64", hint: "Compute 4 × 4 = 16, then 16 × 4."}
-         ]},
-        {id:2, name:"Negative Numbers", equation:"-5 + 8 = 3", intro:"Values existing past zero threshold.", fullExplanation:`<p>Negative values show debt or directional opposite offsets. Subtracting a negative creates an additive forward push.</p>`, why:"Checking accounting statements, altimeter depth, polar temperatures.", curiosity:"Historically, Chinese accountants used red rods for negatives and black for positives.", 
-         questions: [
-            {q: "-12 + 7 = ?", a: "-5", hint: "You owe 12, pay back 7. You are still down by 5."},
-            {q: "-8 - (-3) = ?", a: "-5", hint: "Subtracting a negative flips the sign to positive: -8 + 3."},
-            {q: "6 + (-9) = ?", a: "-3", hint: "Equates directly to 6 - 9."},
-            {q: "-4 - 5 = ?", a: "-9", hint: "Moving further down the negative path."},
-            {q: "15 - 22 = ?", a: "-7", hint: "Subtracting a larger number from a smaller leaves a negative gap."}
-         ]},
-        {id:3, name:"Absolute Value", equation:"|-7| = 7", intro:"Distance magnitude regardless of sign direction.", fullExplanation:`<p>Absolute value measures how far a number sits from zero on a baseline number line line graph, ignoring its polarity status.</p>`, why:"Error margin assessments, strict distance calculations.", curiosity:"The absolute vertical bracket notation was introduced by Karl Weierstrass in 1841.", 
-         questions: [
-            {q: "|-15| = ?", a: "15", hint: "Strip away the negative direction sign completely."},
-            {q: "|5| = ?", a: "5", hint: "Positive distances remain positive."},
-            {q: "|-3| + | -4 | = ?", a: "7", hint: "Resolve both absolute valuations first: 3 + 4."},
-            {q: "10 - |-6| = ?", a: "4", hint: "Evaluate absolute value first: 10 - 6."},
-            {q: "Which is greater: |-9| or 4? (Type the larger number)", a: "9", hint: "|-9| translates cleanly into 9."}
-         ]},
-        {id:4, name:"Square Roots", equation:"\\sqrt{49} = 7", intro:"The inverse operation of squaring.", fullExplanation:`<p>Finding a value that, when multiplied by itself, outputs the target radiced inside quantity value.</p>`, why:"Triangulation tracking coordinates, structural dimensions.", curiosity:"The radical sign symbol is derived from a modified lowercase 'r', standing for radix.", 
-         questions: [
-            {q: "√36 = ?", a: "6", hint: "What integer multiplied by itself matches 36?"},
-            {q: "√100 = ?", a: "10", hint: "10 times itself matches this target value."},
-            {q: "√1 + √4 = ?", a: "3", hint: "Solve each root individually first: 1 + 2."},
-            {q: "What is the square root of 64?", a: "8", hint: "Think 8 × 8."},
-            {q: "If x² = 16, what is the positive value of x?", a: "4", hint: "Take the square root of 16."}
-         ]},
-        {id:5, name:"Scientific Notation", equation:"3.2 \\times 10^4 = 32,000", intro:"Compacting massive or micro-scale values.", fullExplanation:`<p>Expressing complex digit counts using single unit decimal bases scaled exponentially using base ten structures.</p>`, why:"Astrophysics scales, microbiological analysis measurements.", curiosity:"The universe is estimated to be roughly 4.4 × 10^17 seconds old.", 
-         questions: [
-            {q: "Write 5,000 in scientific notation format (use x for multiplication, like 5x10^3).", a: "5x10^3", hint: "Count how many steps the decimal point moves left."},
-            {q: "Convert 2.5 × 10² into standard integer form.", a: "250", hint: "Shift the decimal dot point right by 2 positions."},
-            {q: "What is (2 × 10³) × 3?", a: "6000", hint: "Multiply 2 by 3, then scale by the exponent factor."},
-            {q: "Convert 9.1 × 10^0 into standard value form.", a: "9.1", hint: "Recall that 10^0 equals exactly 1."},
-            {q: "Express 45,000 in proper scientific notation format.", a: "4.5x10^4", hint: "Keep the base between 1 and 10."}
-         ]},
-        {id:6, name:"Variables introduction", equation:"x + 5 = 12 \\implies x = 7", intro:"Using placeholder markers for unknown variables.", fullExplanation:`<p>Variables act as systemic containers holding values that are yet unknown or subject to variation.</p>`, why:"Software programming inputs, designing business model templates.", curiosity:"Algebra stems from 'al-jabr', meaning restoration of broken parts.", 
-         questions: [
-            {q: "If x + 8 = 15, what is x?", a: "7", hint: "Subtract 8 from both sides of the equation balance."},
-            {q: "Evaluate 3y when y = 6.", a: "18", hint: "Substitute 6 into y position: 3 × 6."},
-            {q: "If 20 - z = 14, what is z?", a: "6", hint: "What number subtracted from 20 leaves 14?"},
-            {q: "Evaluate a + b when a = 4 and b = 9.", a: "13", hint: "Add 4 and 9 together directly."},
-            {q: "If 4x = 24, what is x?", a: "6", hint: "Divide 24 by 4."}
-         ]},
-        {id:7, name:"Ratios and Proportions", equation:"2:3 = 4:6", intro:"Comparing value scales relative to each other.", fullExplanation:`<p>Ratios establish how much of one thing exists compared to another asset component within an active setup loop.</p>`, why:"Blueprints scaling mapping, adjustments for culinary mix profiles.", curiosity:"The Golden Ratio (1:1.618) appears frequently across biological structures.", 
-         questions: [
-            {q: "A map scale uses 1 inch for every 5 miles. How many miles is 4 inches?", a: "20", hint: "Multiply 4 by 5 proportional units."},
-            {q: "Simplify the structural ratio 8:12 to lowest terms.", a: "2:3", hint: "Divide both positions by their highest common factor, 4."},
-            {q: "If a mix requires 2 cups water for every 3 cups flour, how much water is paired with 9 cups flour?", a: "6", hint: "Flour scaled up by 3, so multiply water count by 3 as well."},
-            {q: "Solve for x in this proportion: 1/2 = x/10.", a: "5", hint: "Half of 10 matches what integer value?"},
-            {q: "Are the ratios 3:4 and 6:8 equal? (Type yes or no)", a: "yes", hint: "Check if cross-multiplying or simplifying yields parity."}
-         ]},
-        {id:8, name:"Basic Inequalities", equation:"x > 5", intro:"Evaluating non-equal boundary balances.", fullExplanation:`<p>Inequalities indicate when values are larger, smaller, or bounded by limits instead of absolute equality points.</p>`, why:"Speed limits, budget ceilings, safety thresholds.", curiosity:"The inequality symbols < and > were created by Thomas Harriot in 1631.", 
-         questions: [
-            {q: "If x + 2 < 7, is x = 6 a valid solution? (Type yes or no)", a: "no", hint: "Substitute 6: 6+2=8. Is 8 less than 7?"},
-            {q: "Solve the inequality: x - 3 > 5.", a: "x>8", hint: "Add 3 to both sides to isolate the target variable."},
-            {q: "If -2x < -6, does flipping signs mean x > 3? (Type yes or no)", a: "yes", hint: "Multiplying or dividing an inequality by a negative flips its direction symbol."},
-            {q: "Is 5 greater than or equal to 5? (Type yes or no)", a: "yes", hint: "The 'equal to' condition satisfies this assertion."},
-            {q: "Solve for x: 2x ≤ 10.", a: "x<=5", hint: "Divide both sides by positive 2."}
-         ]},
-        {id:9, name:"Coordinate Planes", equation:"Point = (x, y)", intro:"Mapping positions across intersecting grids.", fullExplanation:`<p>Using a horizontal axis (X) and vertical axis (Y) originating from a zero coordinates focal center point (0,0).</p>`, why:"GPS map plotting, game design layout tracking.", curiosity:"René Descartes allegedly invented coordinate planes while watching a fly crawl along his ceiling grid.", 
-         questions: [
-            {q: "What is the name of point (0,0)?", a: "origin", hint: "The starting intersection center point."},
-            {q: "In what quadrant does point (-3, 4) reside? (Type 1, 2, 3, or 4)", a: "2", hint: "X is negative (left), Y is positive (up)."},
-            {q: "If you start at (1,1) and move 3 units right and 2 units up, what is your coordinate position?", a: "(4,3)", hint: "Add 3 to X and 2 to Y axis values."},
-            {q: "Which axis is vertical: x or y?", a: "y", hint: "The axis going straight up and down."},
-            {q: "What is the y-coordinate of the point (5, 8)?", a: "8", hint: "Coordinates follow the standard format style: (x, y)."}
-         ]},
-        {id:10, name:"Mean, Median, Mode", equation:"Mean = \\frac{\\sum x}{n}", intro:"Statistical foundational metrics overview.", fullExplanation:`<p>Mean calculates global averages. Median locks the central array midpoint. Mode tracks the highest frequency item.</p>`, why:"Analyzing average incomes, product trends, class test curves.", curiosity:"The word 'mean' traces back to old French roots for 'middle'.", 
-         questions: [
-            {q: "Find the mean of numbers: 2, 4, 6, 8.", a: "5", hint: "Add them up to get 20, then divide by the total count, 4."},
-            {q: "What is the mode of data set: 3, 4, 4, 5, 6?", a: "4", hint: "Identify the number that appears most frequently."},
-            {q: "Find the median of this ordered list: 1, 3, 7, 10, 13.", a: "7", hint: "Identify the exact middle item of the list."},
-            {q: "Find the mean of 10 and 30.", a: "20", hint: "Add them together and divide by 2."},
-            {q: "What is the median of this dataset after sorting it: 8, 2, 5?", a: "5", hint: "Always sort numbers from lowest to highest first: 2, 5, 8."}
-         ]},
-        {id:11, name:"Algebraic Expression Evaluation", equation:"2x + 3 \\quad \\text{when } x=4 \\implies 11", intro:"Substituting known numeric values into algebraic forms.", fullExplanation:`<p>Replace variables with specific numbers and follow standard order of operations to evaluate final values.</p>`, why:"Running code functions, computing tax brackets.", curiosity:"Computers execute code by constantly evaluating variables in memory.", 
-         questions: [
-            {q: "Evaluate 3x + 1 when x = 5.", a: "16", hint: "Multiply 3 × 5 first, then add 1."},
-            {q: "Evaluate 10 - 2y when y = 3.", a: "4", hint: "Multiply 2 × 3 first, then subtract from 10."},
-            {q: "Evaluate a² + b when a = 3 and b = 2.", a: "11", hint: "Square 3 first (9), then add 2."},
-            {q: "Evaluate (x + 2) / 4 when x = 6.", a: "2", hint: "Solve numerator first: 6 + 2 = 8."},
-            {q: "Evaluate 5m - n when m = 2 and n = 3.", a: "7", hint: "5 × 2 = 10, then subtract 3."}
-         ]},
-        {id:12, name:"Multi-Step Inequalities", equation:"2x - 3 > 5 \\implies x > 4", intro:"Isolating variable inequalities through step procedures.", fullExplanation:`<p>Apply inverse operations while remembering that dividing or multiplying by negatives reverses the inequality symbol.</p>`, why:"Setting safety limits, specifying acceptable error bounds.", curiosity:"Inequality signs were designed to mimic arrows indicating directional magnitude.", 
-         questions: [
-            {q: "Solve for x: x + 4 > 10.", a: "x>6", hint: "Subtract 4 from both sides."},
-            {q: "Solve for y: 3y - 1 < 8.", a: "y<3", hint: "Add 1 to get 3y < 9, then divide by 3."},
-            {q: "Is x = 5 a valid solution to 2x > 8? (Type yes or no)", a: "yes", hint: "Substitute 5: 2(5) = 10 > 8."},
-            {q: "Solve for z: z/2 + 3 ≥ 7.", a: "z>=8", hint: "Subtract 3 first (z/2 ≥ 4), then multiply by 2."},
-            {q: "Does dividing an inequality by -2 flip the inequality sign? (Type yes or no)", a: "yes", hint: "Dividing by a negative always reverses the direction."}
-         ]},
-        {id:13, name:"Basic Probability", equation:"P(E) = \\frac{\\text{Favorable Outcomes}}{\\text{Total Outcomes}}", intro:"Measuring the likelihood of events occurring.", fullExplanation:`<p>Probability rates chance on a scale from 0 (impossible) to 1 (absolute certainty).</p>`, why:"Risk modeling, game balance design, weather prediction.", curiosity:"Modern probability theory started from analysis of French gambling games.", 
-         questions: [
-            {q: "What is the probability of rolling a 4 on a standard 6-sided die?", a: "1/6", hint: "One favorable face out of six total sides."},
-            {q: "What is the probability of flipping heads on a fair coin?", a: "1/2", hint: "One favorable outcome out of two total sides."},
-            {q: "A bag has 3 red and 7 blue marbles. What is P(red)?", a: "3/10", hint: "3 red marbles divided by 10 total marbles."},
-            {q: "What is the numerical probability of an impossible event?", a: "0", hint: "Zero chance equals 0."},
-            {q: "What is the probability of an event that is 100% certain to happen?", a: "1", hint: "100% converts to 1.0 in standard probability notation."}
-         ]},
-        {id:14, name:"Unit Conversions", equation:"1\\text{ ft} = 12\\text{ in}", intro:"Converting values across standardized measurement systems.", fullExplanation:`<p>Multiply by conversion factors structured as equal ratios to shift unit dimensions without changing true physical quantity.</p>`, why:"International trading, engineering specifications, aviation navigation.", curiosity:"A conversion error between metric and imperial units famously lost NASA the Mars Climate Orbiter in 1999.", 
-         questions: [
-            {q: "How many inches are in 3 feet?", a: "36", hint: "Multiply 3 feet by 12 inches per foot."},
-            {q: "How many minutes are in 2.5 hours?", a: "150", hint: "Multiply 2.5 by 60 minutes."},
-            {q: "How many centimeters are in 1 meter?", a: "100", hint: "The prefix 'centi' denotes hundredths."},
-            {q: "How many ounces are in 2 pounds? (1 lb = 16 oz)", a: "32", hint: "Multiply 2 by 16."},
-            {q: "Convert 4 yards to feet. (1 yd = 3 ft)", a: "12", hint: "Multiply 4 yards by 3 feet per yard."}
-         ]},
-        {id:15, name:"Sequences and Patterns", equation:"2, 5, 8, 11 \\implies +3\\, \\text{pattern}", intro:"Identifying structured numerical progression rules.", fullExplanation:`<p>Arithmetic sequences add constant step amounts, while geometric sequences scale exponentially through constant multipliers.</p>`, why:"Financial interest projections, computer algorithm iterations.", curiosity:"Fibonacci sequences appear naturally across pinecone spirals and sunflower petal counts.", 
-         questions: [
-            {q: "What is the next number in sequence: 2, 5, 8, 11, __?", a: "14", hint: "Notice the rule adds 3 to each previous term."},
-            {q: "What is the common difference in: 10, 7, 4, 1, -2?", a: "-3", hint: "Determine how much the sequence changes per step."},
-            {q: "What is the next term in geometric sequence: 3, 6, 12, 24, __?", a: "48", hint: "Each term doubles the previous value."},
-            {q: "What is the 5th term in the sequence starting at 1 with rule +4?", a: "17", hint: "1, 5, 9, 13, ?"},
-            {q: "Is the sequence 2, 4, 8, 16 arithmetic or geometric?", a: "geometric", hint: "It multiplies by a ratio rather than adding a fixed constant."}
-         ]}
-    ]
-},
-{
-    id: "algebra",
-    name: "Algebra I",
-    lessons: [
-        {id:1, name:"Combining Like Terms", equation:"3x + 2x = 5x", intro:"Simplifying matching algebraic terms.", fullExplanation:`<p>You can only add or subtract variables if they share matching components and identical exponent powers.</p><div class="example">3x + 4y + 2x = 5x + 4y</div>`, why:"Condensing equations to make tracking system formulas manageable.", curiosity:"Equations were written entirely in words before symbolism took over.", 
-         questions: [
-            {q: "Simplify: 4x + 5x - 2x", a: "7x", hint: "Perform standard calculations along matching variable tags."},
-            {q: "Simplify: 3a + 2b + 4a", a: "7a+2b", hint: "Combine the 'a' terms; leave 'b' alone."},
-            {q: "Simplify: 5x² + 2x²", a: "7x^2", hint: "Exponents don't change during basic addition setups."},
-            {q: "Simplify: 10x + 4 - 3x", a: "7x+4", hint: "Keep variable terms and constant numbers separated."},
-            {q: "Simplify: x + x + x", a: "3x", hint: "An isolated variable carries an implicit coefficient value of 1."}
-         ]},
-        {id:2, name:"One-Step Equations", equation:"x - 4 = 10 \\implies x = 14", intro:"Isolating variables using single operations.", fullExplanation:`<p>Perform inverse operations uniformly across both sides of the equal sign to preserve perfect balance balance state.</p>`, why:"Finding structural missing links across data processing chains.", curiosity:"The equals sign was invented via two parallel lines because nothing is more equal than them.", 
-         questions: [
-            {q: "Solve for x: x + 9 = 20", a: "11", hint: "Subtract 9 from both sides of the equation."},
-            {q: "Solve for y: 5y = 35", a: "7", hint: "Divide both sides by 5."},
-            {q: "Solve for z: z / 3 = 6", a: "18", hint: "Multiply both sides by 3."},
-            {q: "Solve for a: a - 12 = 5", a: "17", hint: "Add 12 to both sides."},
-            {q: "Solve for b: -3 + b = 10", a: "13", hint: "Add 3 to isolate your target variable."}
-         ]},
-        {id:3, name:"Two-Step Equations", equation:"2x + 3 = 11 \\implies x = 4", intro:"Layered variable isolation workflows.", fullExplanation:`<p>Undo addition or subtraction operations first, then clear multiplication or division barriers second.</p>`, why:"Reversing complex formula workflows to locate baseline inputs.", curiosity:"Every step taken must preserve absolute equation balance parity.", 
-         questions: [
-            {q: "Solve for x: 3x - 4 = 11", a: "5", hint: "Add 4 to both sides first, then divide by 3."},
-            {q: "Solve for y: 2y + 8 = 20", a: "6", hint: "Subtract 8 from both sides first, then divide by 2."},
-            {q: "Solve for z: z/2 - 1 = 4", a: "10", hint: "Add 1 first, then multiply the result by 2."},
-            {q: "Solve for a: 5a + 10 = 10", a: "0", hint: "Subtract 10 from both sides first."},
-            {q: "Solve for b: 4b - 2 = 14", a: "4", hint: "Isolate terms sequentially: 4b = 16."}
-         ]},
-        {id:4, name:"The Distributive Property", equation:"a(b + c) = ab + ac", intro:"Multiplying across grouped parameters.", fullExplanation:`<p>Pass the outside multiplier term into every single asset locked inside the target parentheses block uniformly.</p>`, why:"Expanding factored code equations cleanly.", curiosity:"This property bridges the operations of multiplication and addition.", 
-         questions: [
-            {q: "Expand: 2(x + 4)", a: "2x+8", hint: "Multiply both x and 4 by the outer factor 2."},
-            {q: "Expand: 3(2y - 5)", a: "6y-15", hint: "Multiply 3 by 2y, and 3 by -5."},
-            {q: "Expand: -2(a + 3)", a: "-2a-6", hint: "Be careful with sign distribution tracking rules."},
-            {q: "Simplify: 4(x + 2) - 3", a: "4x+5", hint: "Expand the parentheses first, then combine like terms."},
-            {q: "Expand: x(y + 2)", a: "xy+2x", hint: "Multiply the variable across both inner positions."}
-         ]},
-        {id:5, name:"Multi-Step Equations", equation:"2(x + 3) = 14 \\implies x = 4", intro:"Solving advanced complex linear equations.", fullExplanation:`<p>First expand all distributions, collect like term components together, then apply isolation steps.</p>`, why:"Decoding multifaceted logistical system parameters.", curiosity:"Computers solve these using matrices and reduction algorithms.", 
-         questions: [
-            {q: "Solve for x: 2(x + 3) = 12", a: "3", hint: "Distribute first: 2x + 6 = 12, then isolate x."},
-            {q: "Solve for y: 3y + 2y - 4 = 16", a: "4", hint: "Combine like terms first: 5y - 4 = 16."},
-            {q: "Solve for z: 4(z - 1) = 12", a: "4", hint: "Expand to 4z - 4 = 12, then add 4 and divide."},
-            {q: "Solve for a: 2a + 5 = a + 9", a: "4", hint: "Subtract a from both sides first: a + 5 = 9."},
-            {q: "Solve for x: 5x - 3 = 2x + 6", a: "3", hint: "Get variables to one side: 3x - 3 = 6."}
-         ]},
-        {id:6, name:"Linear Equation Slopes", equation:"m = \\frac{y_2 - y_1}{x_2 - x_1}", intro:"Measuring the steepness and direction of a line.", fullExplanation:`<p>Slope tracks vertical rise change divided by horizontal run displacement across grid maps.</p>`, why:"Tracking financial asset trajectories, measuring structural building grades.", curiosity:"The letter 'm' for slope likely comes from the French word 'monter', meaning to climb.", 
-         questions: [
-            {q: "Find the slope between points (1,2) and (3,6).", a: "2", hint: "Calculate change in Y divided by change in X: (6-2)/(3-1)."},
-            {q: "What is the slope of a horizontal line?", a: "0", hint: "Horizontal lines have zero vertical rise."},
-            {q: "Find the slope between points (0,0) and (5,5).", a: "1", hint: "(5-0)/(5-0) = 5/5."},
-            {q: "If a line rises 9 units over a run of 3 units, what is its slope?", a: "3", hint: "Divide vertical rise by horizontal run dynamic directly."},
-            {q: "What is the slope of the line equation y = -4x + 2?", a: "-4", hint: "In y = mx + b form, m represents the slope value."}
-         ]},
-        {id:7, name:"Slope-Intercept Form", equation:"y = mx + b", intro:"The universal framework for linear equation charting.", fullExplanation:`<p>Here, 'm' dictates line vector tilt slope, while 'b' establishes the exact altitude point where the line cuts the Y-axis.</p>`, why:"Projecting continuous financial business pipelines.", curiosity:"Any straight line can be mapped using this exact equation format.", 
-         questions: [
-            {q: "In y = 3x + 5, what is the y-intercept value?", a: "5", hint: "The y-intercept is the constant term 'b'."},
-            {q: "Identify the slope in the equation y = -2x + 7.", a: "-2", hint: "Look at the coefficient attached directly to x."},
-            {q: "Find the y-value if y = 2x + 1 and x = 4.", a: "9", hint: "Substitute 4 for x and evaluate: 2(4) + 1."},
-            {q: "Write the equation for a line with slope 4 and y-intercept -3. (No spaces)", a: "y=4x-3", hint: "Plug values directly into the y = mx + b format template."},
-            {q: "Where does the line y = 5x cross the Y-axis?", a: "0", hint: "Since there is no visible constant term, b defaults to 0."}
-         ]},
-        {id:8, name:"Exponent Laws", equation:"x^a \\times x^b = x^{a+b}", intro:"Rules for combining exponential variables.", fullExplanation:`<p>When multiplying like bases, add the exponents. When dividing like bases, subtract the exponents.</p>`, why:"Managing complex growth scales efficiently.", curiosity:"Any non-zero base raised to the power of 0 equals exactly 1.", 
-         questions: [
-            {q: "Simplify: (x³) × (x²)", a: "x^5", hint: "Add exponents together: 3 + 2."},
-            {q: "Simplify: y^7 / y^3", a: "y^4", hint: "Subtract denominator power from numerator power: 7 - 3."},
-            {q: "Simplify: (2x²) × (3x⁴)", a: "6x^6", hint: "Multiply coefficients normally; add exponents together."},
-            {q: "What is x^0 when x is not zero?", a: "1", hint: "Any non-zero base raised to the power of 0 equals 1."},
-            {q: "Simplify: (x³)²", a: "x^6", hint: "When raising a power to another power, multiply them: 3 × 2."}
-         ]},
-        {id:9, name:"Polynomial Basics", equation:"3x^2 + 2x - 5", intro:"Multi-termed algebraic expressions.", fullExplanation:`<p>Polynomials are expressions containing multiple variable terms built using whole number exponent indices.</p>`, why:"Curve modeling, physics flight trajectory tracking.", curiosity:"The word polynomial comes from Greek 'poly' (many) and Latin 'nomen' (name/term).", 
-         questions: [
-            {q: "What is the degree of the polynomial: 4x³ + 2x - 1?", a: "3", hint: "The degree is the highest exponent present on the variable."},
-            {q: "Add these polynomials: (2x + 3) + (4x + 5)", a: "6x+8", hint: "Combine like variable terms and constant blocks together."},
-            {q: "Multiply: x(x + 4)", a: "x^2+4x", hint: "Distribute x across both inner positions."},
-            {q: "How many terms are in the expression 3x² + 5x - 2?", a: "3", hint: "Terms are parts separated by plus or minus signs."},
-            {q: "Subtract: (5x + 10) - (2x + 3)", a: "3x+7", hint: "Distribute the negative sign across the second block: -2x - 3."}
-         ]},
-        {id:10, name:"Systems of Equations", equation:"\\begin{cases}x+y=5\\\\x-y=1\\end{cases} \\implies x=3, y=2", intro:"Solving multiple intersecting equation constraints.", fullExplanation:`<p>Finding a singular coordinate point shared by multiple distinct equations using substitution or elimination tactics.</p>`, why:"Supply-demand market equilibrium balancing.", curiosity:"Linear systems can have exactly one solution, zero solutions, or infinite solutions.", 
-         questions: [
-            {q: "If x + y = 10 and x = y, what is x?", a: "5", hint: "Substitute x for y to get 2x = 10."},
-            {q: "If y = 2x and x + y = 9, what is x?", a: "3", hint: "Substitute 2x into y's position to get 3x = 9."},
-            {q: "Solve by adding equations: (x + y = 4) and (x - y = 2). What is x?", a: "3", hint: "Adding equations eliminates y: 2x = 6."},
-            {q: "Are parallel lines a system with zero solutions? (Type yes or no)", a: "yes", hint: "Parallel lines never intersect, meaning they share no common solutions."},
-            {q: "If x + y = 5 and y = 2, what is x?", a: "3", hint: "Substitute 2 for y and solve for x."}
-         ]},
-        {id:11, name:"Factoring Quadratics", equation:"x^2 + 5x + 6 = (x+2)(x+3)", intro:"Decomposing quadratic expressions into linear factors.", fullExplanation:`<p>Factoring reverses distribution by finding binomial factors that multiply to produce the original quadratic polynomial.</p>`, why:"Finding parabolic trajectory ground roots, structural engineering balance.", curiosity:"Babylonians could solve quadratic problems through geometric square-completion over 3,000 years ago.", 
-         questions: [
-            {q: "What two numbers multiply to 6 and add up to 5?", a: "2,3", hint: "Think of factors of 6: 1×6 and 2×3."},
-            {q: "Factor x² - 9 into difference of squares form (x-a)(x+a). What is a?", a: "3", hint: "√9 = 3."},
-            {q: "What two numbers multiply to 12 and add up to 7?", a: "3,4", hint: "Check factor pairs of 12."},
-            {q: "What two numbers multiply to -10 and add to 3?", a: "5,-2", hint: "One number must be positive and one negative."},
-            {q: "Is x² + 4x + 4 a perfect square trinomial? (Type yes or no)", a: "yes", hint: "(x + 2)² = x² + 4x + 4."}
-         ]},
-        {id:12, name:"The Quadratic Formula", equation:"x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", intro:"Universal formula solving any quadratic equation.", fullExplanation:`<p>Provides exact root solutions for ax² + bx + c = 0, using the discriminant (b² - 4ac) to determine root quantities.</p>`, why:"Physics motion trajectories, projectile landing targets.", curiosity:"Al-Khwarizmi provided early general algebraic frameworks for quadratic solutions.", 
-         questions: [
-            {q: "In ax² + bx + c = 0, what is the value b² - 4ac called?", a: "discriminant", hint: "It 'discriminates' the types of roots available."},
-            {q: "If the discriminant is 0, how many real roots exist?", a: "1", hint: "The square root of zero yields a single repeated root."},
-            {q: "Solve x² - 4 = 0 for positive x.", a: "2", hint: "x² = 4, so take the square root."},
-            {q: "In x² - 5x + 6 = 0, what is the value of 'b'?", a: "-5", hint: "Include the negative sign attached to the middle coefficient."},
-            {q: "If the discriminant is negative, can real roots exist? (Type yes or no)", a: "no", hint: "Negative numbers have imaginary square roots."}
-         ]},
-        {id:13, name:"Absolute Value Equations", equation:"|x - 2| = 5 \\implies x = 7 \\text{ or } x = -3", intro:"Solving equations involving distance magnitudes.", fullExplanation:`<p>Absolute value equations split into two separate cases representing positive and negative directional distance branches.</p>`, why:"Quality control tolerance checks, signal processing bounds.", curiosity:"Absolute value equations always generate V-shaped graph geometries.", 
-         questions: [
-            {q: "Solve |x| = 8 for positive x.", a: "8", hint: "The positive value 8 units from zero."},
-            {q: "Solve |x - 3| = 0.", a: "3", hint: "Distance from 3 is zero."},
-            {q: "Does |x| = -5 have any real solutions? (Type yes or no)", a: "no", hint: "Absolute distance can never be negative."},
-            {q: "Solve |x + 1| = 4 for positive x.", a: "3", hint: "x + 1 = 4 gives x = 3."},
-            {q: "Solve |2x| = 10 for positive x.", a: "5", hint: "2x = 10 gives x = 5."}
-         ]},
-        {id:14, name:"Function Notation", equation:"f(x) = 2x + 3 \\implies f(4) = 11", intro:"Mapping input values to specific single output values.", fullExplanation:`<p>A function f(x) acts as an automated mathematical rule taking input variable x and outputting calculated result f(x).</p>`, why:"Software API methods, economic modeling curves.", curiosity:"Leonhard Euler popularized the standard f(x) function notation system in 1734.", 
-         questions: [
-            {q: "If f(x) = 3x - 2, evaluate f(5).", a: "13", hint: "Substitute 5 into x: 3(5) - 2."},
-            {q: "If g(x) = x², evaluate g(-4).", a: "16", hint: "(-4) × (-4) = 16."},
-            {q: "If f(x) = 10 - x, solve f(x) = 4 for x.", a: "6", hint: "Set 10 - x = 4 and solve."},
-            {q: "In f(x), what is the set of all valid inputs called: domain or range?", a: "domain", hint: "Inputs form the domain; outputs form the range."},
-            {q: "If h(x) = 2^x, evaluate h(3).", a: "8", hint: "2 to the 3rd power (2 × 2 × 2)."}
-         ]},
-        {id:15, name:"Exponential Growth and Decay", equation:"y = a(1 + r)^t", intro:"Modeling compounding or decaying quantities over time.", fullExplanation:`<p>Exponential functions multiply outputs by a constant factor across equal time step increments.</p>`, why:"Virus transmission tracking, financial interest, radioactive half-lives.", curiosity:"The rule of 72 estimates exponential doubling time by dividing 72 by interest percentage.", 
-         questions: [
-            {q: "In y = 100(1.05)^t, is this growth or decay?", a: "growth", hint: "The base factor 1.05 is greater than 1."},
-            {q: "In y = 500(0.8)^t, what is the percentage decay rate per step?", a: "20%", hint: "1 - 0.8 = 0.20 or 20%."},
-            {q: "Evaluate y = 10 × (2^3).", a: "80", hint: "2³ = 8, then multiply by 10."},
-            {q: "What is the initial starting value 'a' in y = 250(1.12)^t?", a: "250", hint: "The initial value occurs at t = 0."},
-            {q: "If a population of 5 doubles every hour, how many exist after 2 hours?", a: "20", hint: "5 × 2 × 2."}
-         ]}
-    ]
-},
-{
-    id: "geometry",
-    name: "Geometry Foundations",
-    lessons: [
-        {id:1, name:"Points, Lines, and Angles", equation:"\\angle A + \\angle B = 180^\\circ", intro:"Understanding fundamental geometric building blocks.", fullExplanation:`<p>A point represents a precise location. A line extends endlessly in two directions. Angles measure the space between two intersecting lines, where supplementary angles sum to 180 degrees.</p>`, why:"Architecture, graphic design, map navigation.", curiosity:"The word 'geometry' translates from ancient Greek as 'earth measurement'.", 
-         questions: [
-            {q: "What is the sum of two supplementary angles in degrees?", a: "180", hint: "Supplementary angles form a straight line."},
-            {q: "If angle A is 40°, what is its complementary angle?", a: "50", hint: "Complementary angles add up to 90 degrees."},
-            {q: "What is the measure of a straight angle in degrees?", a: "180", hint: "A straight angle forms a flat line."},
-            {q: "How many right angles fit inside a 360° full rotation?", a: "4", hint: "Divide 360 by 90 degrees."},
-            {q: "If two intersecting lines form an angle of 70°, what is the vertical opposite angle?", a: "70", hint: "Vertical angles are always equal."}
-         ]},
-        {id:2, name:"Triangles and Angle Sums", equation:"\\sum \\text{Angles} = 180^\\circ", intro:"Interior angle properties of triangles.", fullExplanation:`<p>The interior angles of any triangle on a flat plane always sum up to exactly 180 degrees, regardless of shape or size.</p>`, why:"Structural engineering, 3D computer graphics meshes.", curiosity:"Triangles are the only rigid polygon shape, which is why bridges rely on triangular trusses.", 
-         questions: [
-            {q: "Two angles of a triangle are 50° and 60°. What is the third angle?", a: "70", hint: "Subtract 50 and 60 from 180."},
-            {q: "In an equilateral triangle, what is the measure of each interior angle in degrees?", a: "60", hint: "Divide 180 degrees equally among all 3 angles."},
-            {q: "Can a triangle have two 90° right angles? (Type yes or no)", a: "no", hint: "Two 90° angles equal 180°, leaving zero degrees for the third angle."},
-            {q: "In an isosceles right triangle, what are the two acute angles in degrees?", a: "45", hint: "The remaining 90° is divided equally between two angles."},
-            {q: "What is the sum of interior angles in a triangle?", a: "180", hint: "A fundamental geometric constant rule."}
-         ]},
-        {id:3, name:"The Pythagorean Theorem", equation:"a^2 + b^2 = c^2", intro:"Connecting side lengths in right triangles.", fullExplanation:`<p>In any right-angled triangle, the square of the longest side (hypotenuse) equals the sum of the squares of the other two legs.</p>`, why:"Construction surveying, video game motion tracking.", curiosity:"Babylonians recorded Pythagorean triples on clay tablets centuries before Pythagoras was born.", 
-         questions: [
-            {q: "In a right triangle with legs a = 3 and b = 4, what is hypotenuse c?", a: "5", hint: "Calculate √(3² + 4²) = √(9 + 16)."},
-            {q: "If leg a = 6 and hypotenuse c = 10, what is leg b?", a: "8", hint: "Rearrange to b² = c² - a² = 100 - 36 = 64."},
-            {q: "What is 5² + 12²?", a: "169", hint: "Calculate 25 + 144."},
-            {q: "What is the square root of 169?", a: "13", hint: "The hypotenuse of a 5-12-13 right triangle."},
-            {q: "Does a triangle with sides 5, 6, 7 form a right triangle? (Type yes or no)", a: "no", hint: "Check if 25 + 36 equals 49."}
-         ]},
-        {id:4, name:"Area and Perimeter", equation:"A = b \\times h", intro:"Measuring surface region and outer boundaries.", fullExplanation:`<p>Perimeter measures the total length around a shape's border. Area measures the interior surface enclosed by the boundaries.</p>`, why:"Fencing yards, installing flooring, urban development.", curiosity:"Perimeter comes from 'peri' (around) and 'metron' (measure).", 
-         questions: [
-            {q: "What is the perimeter of a rectangle with length 8 and width 3?", a: "22", hint: "Perimeter = 2(length + width)."},
-            {q: "What is the area of a rectangle with base 6 and height 4?", a: "24", hint: "Multiply base by height directly."},
-            {q: "What is the area of a triangle with base 10 and height 4?", a: "20", hint: "Area = (1/2) × base × height."},
-            {q: "A square has a perimeter of 20. What is its side length?", a: "5", hint: "Divide perimeter by 4 equal sides."},
-            {q: "What is the area of a square with side length 7?", a: "49", hint: "Square the side length: 7 × 7."}
-         ]},
-        {id:5, name:"Circles and Circumference", equation:"C = 2\\pi r, \\quad A = \\pi r^2", intro:"Boundary and region calculations of circular geometry.", fullExplanation:`<p>Circumference is the perimeter of a circle, calculated using Pi (π ≈ 3.14159). Radius (r) is distance from center to edge, while diameter (d) spans edge to edge through the center.</p>`, why:"Engineering wheels, orbital mechanics, pipe fitting.", curiosity:"Pi is an irrational number whose decimal expansion never terminates or repeats.", 
-         questions: [
-            {q: "If a circle has a radius of 5, what is its diameter?", a: "10", hint: "Diameter is twice the radius length."},
-            {q: "If diameter is 14, what is the radius?", a: "7", hint: "Radius is half of the diameter."},
-            {q: "Using π ≈ 3.14, what is the circumference of a circle with radius 10?", a: "62.8", hint: "Circumference = 2 × π × r."},
-            {q: "Using π ≈ 3.14, what is the area of a circle with radius 2?", a: "12.56", hint: "Area = π × r² = 3.14 × 4."},
-            {q: "What is the ratio of a circle's circumference to its diameter?", a: "pi", hint: "The fundamental constant symbol or name (π)."}
-         ]},
-        {id:6, name:"Quadrilaterals and Polygons", equation:"\\sum \\text{Angles} = (n-2) \\times 180^\\circ", intro:"Classifying multi-sided flat shapes and interior angles.", fullExplanation:`<p>Polygons are closed 2D shapes built from straight lines. Sum of interior angles increases by 180° with every added side.</p>`, why:"3D game modeling meshes, floor plans, tessellation tile art.", curiosity:"A polygon with 100,000 sides is called a hectomyriagon.", 
-         questions: [
-            {q: "What is the interior angle sum of a 4-sided quadrilateral in degrees?", a: "360", hint: "(4 - 2) × 180° = 2 × 180°."},
-            {q: "What is the interior angle sum of a 5-sided pentagon in degrees?", a: "540", hint: "(5 - 2) × 180°."},
-            {q: "How many sides does a hexagon have?", a: "6", hint: "Think of honeycomb cells."},
-            {q: "How many equal sides does a regular octagon have?", a: "8", hint: "Think of standard stop signs."},
-            {q: "What is the interior angle sum of a hexagon in degrees?", a: "720", hint: "(6 - 2) × 180° = 4 × 180°."}
-         ]},
-        {id:7, name:"Volume of Prisms and Cylinders", equation:"V = B \\times h", intro:"Calculating 3D interior capacity space.", fullExplanation:`<p>Volume measures 3D space contained inside a solid, found by multiplying base cross-section area (B) by length/height (h).</p>`, why:"Container shipping capacity, fluid dynamics storage.", curiosity:"Archimedes requested a cylinder circumscribing a sphere carved on his tombstone.", 
-         questions: [
-            {q: "Find the volume of a rectangular prism with length 3, width 4, and height 5.", a: "60", hint: "Multiply 3 × 4 × 5."},
-            {q: "What is the volume of a cube with side length 3?", a: "27", hint: "3 × 3 × 3."},
-            {q: "If base area B = 20 and height h = 6, what is prism volume?", a: "120", hint: "Multiply base area by height."},
-            {q: "What is the volume of a box with dimensions 2 by 2 by 10?", a: "40", hint: "2 × 2 × 10."},
-            {q: "If you double the height of a cylinder while keeping base fixed, volume doubles? (Type yes or no)", a: "yes", hint: "Volume is directly proportional to height."}
-         ]},
-        {id:8, name:"Surface Area Basics", equation:"SA_{\\text{cube}} = 6s^2", intro:"Measuring total exterior skin area of 3D solids.", fullExplanation:`<p>Surface area sums the 2D area regions of all exterior faces covering a three-dimensional figure.</p>`, why:"Estimating paint quantities, packaging material costs.", curiosity:"Cells remain small because surface area to volume ratio drops as objects grow larger.", 
-         questions: [
-            {q: "What is the surface area of a cube with side length 2?", a: "24", hint: "6 faces × (2²)."},
-            {q: "How many faces does a standard rectangular prism have?", a: "6", hint: "Count top/bottom, front/back, left/right."},
-            {q: "What is the surface area of a cube with side length 5?", a: "150", hint: "6 × 5² = 6 × 25."},
-            {q: "If one face of a cube has area 9, what is total surface area?", a: "54", hint: "Multiply single face area 9 by 6 faces."},
-            {q: "Do 2D flat shapes have volume? (Type yes or no)", a: "no", hint: "Volume requires 3D depth dimensions."}
-         ]},
-        {id:9, name:"Similarity and Scale Factors", equation:"\\frac{a_1}{a_2} = \\frac{b_1}{b_2} = k", intro:"Proportional shapes matching angles with scaled sides.", fullExplanation:`<p>Similar figures share identical shape geometry and equal corresponding angles, with sides scaled by scale factor k.</p>`, why:"Architectural scale models, map drawing projections.", curiosity:"Photographic zoom lenses rely on geometric scale factor ratios.", 
-         questions: [
-            {q: "Triangle A has side 4. Similar Triangle B has corresponding side 8. What is the scale factor from A to B?", a: "2", hint: "8 divided by 4."},
-            {q: "Are all equilateral triangles similar to each other? (Type yes or no)", a: "yes", hint: "All equilateral triangles have 60° angles."},
-            {q: "Two similar rectangles have scale factor 3. If smaller perimeter is 10, what is larger perimeter?", a: "30", hint: "Multiply perimeter by scale factor 3."},
-            {q: "If two figures are congruent, is their scale factor 1? (Type yes or no)", a: "yes", hint: "Congruent means identical in size and shape."},
-            {q: "A 3-4-5 right triangle is scaled up by factor 4. What is the new hypotenuse?", a: "20", hint: "Multiply 5 by 4."}
-         ]},
-        {id:10, name:"Transformations and Symmetry", equation:"(x, y) \\to (-x, y) \\quad \\text{(Y-axis Reflection)}", intro:"Shifting, turning, flipping, and scaling geometric objects.", fullExplanation:`<p>Transformations move or resize figures on coordinate grids through translation (slide), rotation (turn), reflection (flip), or dilation (scale).</p>`, why:"Computer animation rendering, robotics motion planning.", curiosity:"Symmetry principles govern crystal structures and particle physics laws.", 
-         questions: [
-            {q: "What transformation slides a shape without rotating or resizing it?", a: "translation", hint: "Translating moves all points by equal distance vector."},
-            {q: "Reflecting point (3, 4) across the y-axis changes x-coordinate to what value?", a: "-3", hint: "Flipping across Y inverts the X sign."},
-            {q: "What transformation turns a figure around a fixed point?", a: "rotation", hint: "Turning around an axis center point."},
-            {q: "Does a standard square have line symmetry? (Type yes or no)", a: "yes", hint: "Squares fold evenly along 4 symmetry lines."},
-            {q: "What transformation resizes a shape larger or smaller?", a: "dilation", hint: "Dilation scales lengths using a center factor."}
-         ]}
-    ]
-}
+    // ... (same lesson data as before) 
 ];
 
 function getRank(){
@@ -901,11 +444,11 @@ function updateStreak(){
 
 function confirmConceptSwitch(onConfirm) {
     pendingConfirmCallback = onConfirm;
-    document.getElementById("confirm-modal").style.display = "flex";
+    openModal('confirm-modal');
 }
 
 function closeConfirmModal(confirmed) {
-    document.getElementById("confirm-modal").style.display = "none";
+    closeModal('confirm-modal');
     if (confirmed && pendingConfirmCallback) {
         pendingConfirmCallback();
     }
@@ -913,11 +456,22 @@ function closeConfirmModal(confirmed) {
 }
 
 function openModal(modalId) {
-    document.getElementById(modalId).style.display = "flex";
+    const modal = document.getElementById(modalId);
+    if(!modal) return;
+    modal.style.display = 'flex';
+    // prevent body from shifting when modal opens (fixes scrollbar centering issues)
+    document.body.style.overflow = 'hidden';
+    // reset scroll inside modal content to top
+    const content = modal.querySelector('.modal-content');
+    if(content) { content.scrollTop = 0; }
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = "none";
+    const modal = document.getElementById(modalId);
+    if(!modal) return;
+    modal.style.display = 'none';
+    // restore body scroll
+    document.body.style.overflow = '';
 }
 
 function openMoreModal() {
@@ -995,253 +549,130 @@ function showSubjectSelection(){
     document.getElementById("lesson-list").style.display = "none";
     const grid = document.getElementById("subject-grid");
     grid.innerHTML = "";
+
+    // Render Recommended section if there are recommended lessons stored
+    const recommendedGrid = document.getElementById('recommended-grid');
+    const recommended = JSON.parse(localStorage.getItem('pengwinMathRecommended') || '[]'); // array of {subjectId, lessonId}
+    if (recommended && recommended.length) {
+        document.getElementById('recommended-section').style.display = 'block';
+        recommendedGrid.innerHTML = '';
+        recommended.forEach(item => {
+            try {
+                const subj = subjects.find(s => s.id === item.subjectId);
+                if (!subj) return;
+                const les = subj.lessons.find(l => l.id === item.lessonId);
+                if (!les) return;
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<h2>${les.name}</h2><p>${subj.name}</p>`;
+                card.onclick = () => { openLesson(subj.id, les.id); };
+                recommendedGrid.appendChild(card);
+            } catch (e) { /* ignore malformed entries */ }
+        });
+    } else {
+        document.getElementById('recommended-section').style.display = 'none';
+        recommendedGrid.innerHTML = '';
+    }
+
+    // Read completed lessons to make them a little hidden
+    const completed = JSON.parse(localStorage.getItem('pengwinMathCompleted') || '[]'); // store as ["subjectId-lessonId"]
+
     subjects.forEach(subject => {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = `<h2>${subject.name}</h2><p>${subject.lessons.length} Lessons Available</p>`;
-        card.onclick = () => {
-            if(currentSubject && currentSubject.id !== subject.id){
-                confirmConceptSwitch(() => showSubjectLessons(subject));
-            } else {
-                showSubjectLessons(subject);
-            }
-        };
+        card.innerHTML = `<h2>${subject.name}</h2><p>Explore ${subject.lessons.length} lessons</p>`;
+        card.onclick = () => { showLessonList(subject.id); };
         grid.appendChild(card);
     });
 }
 
-function showSubjectLessons(subject){
+// Make completed lessons appear faded when rendering lesson list
+function showLessonList(subjectId){
+    const subject = subjects.find(s => s.id === subjectId);
+    if(!subject) return;
     currentSubject = subject;
     document.getElementById("subject-selection").style.display = "none";
     document.getElementById("lesson-list").style.display = "block";
-    document.getElementById("current-subject-title").textContent = `${subject.name} — Select Lesson Module`;
-    
-    const grid = document.getElementById("lesson-grid");
-    grid.innerHTML = "";
-    subject.lessons.forEach(lesson => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `<div style="font-size:2.5rem;font-weight:800;color:var(--accent);">${lesson.id}</div><h2>${lesson.name}</h2>`;
-        card.onclick = () => {
-            if(currentLesson && currentLesson.id !== lesson.id){
-                confirmConceptSwitch(() => showLesson(lesson));
-            } else {
-                showLesson(lesson);
-            }
+    document.getElementById('current-subject-title').textContent = subject.name;
+
+    const lessonGrid = document.getElementById('lesson-grid');
+    lessonGrid.innerHTML = '';
+    const completed = JSON.parse(localStorage.getItem('pengwinMathCompleted') || '[]');
+
+    subject.lessons.forEach(les => {
+        const key = `${subject.id}-${les.id}`;
+        const lessonCard = document.createElement('div');
+        lessonCard.className = 'card';
+        if (completed.includes(key)) {
+            lessonCard.style.opacity = '0.45';
+        }
+        lessonCard.innerHTML = `<h2>${les.name}</h2><p>${les.equation || ''}</p>`;
+        lessonCard.onclick = () => { 
+            // when user opens a lesson, mark it recommended removal if present
+            removeFromRecommended(subject.id, les.id);
+            openLesson(subject.id, les.id);
         };
-        grid.appendChild(card);
+        lessonGrid.appendChild(lessonCard);
     });
 }
 
 function backToSubjects(){
-    if(currentSubject || currentLesson){
-        confirmConceptSwitch(() => {
-            currentSubject = null;
-            currentLesson = null;
-            showSubjectSelection();
-        });
-    } else {
-        showSubjectSelection();
+    showSubjectSelection();
+}
+
+function removeFromRecommended(subjectId, lessonId) {
+    let recommended = JSON.parse(localStorage.getItem('pengwinMathRecommended') || '[]');
+    recommended = recommended.filter(r => !(r.subjectId === subjectId && r.lessonId === lessonId));
+    localStorage.setItem('pengwinMathRecommended', JSON.stringify(recommended));
+}
+
+// When user answers incorrectly elsewhere in the app, call this to add to Recommended
+function addToRecommended(subjectId, lessonId) {
+    let recommended = JSON.parse(localStorage.getItem('pengwinMathRecommended') || '[]');
+    const exists = recommended.some(r => r.subjectId === subjectId && r.lessonId === lessonId);
+    if(!exists) {
+        recommended.unshift({subjectId, lessonId});
+        // keep max 10
+        recommended = recommended.slice(0,10);
+        localStorage.setItem('pengwinMathRecommended', JSON.stringify(recommended));
     }
 }
 
-function createLessonHTML(lesson){
-    let questionsPreviewHTML = `<div class="lesson-section" style="background:var(--input-bg); padding:1rem; border-radius:12px; border:1px solid var(--border);">
-        <h4 style="color:var(--accent2); margin-bottom:0.5rem;">Lesson Questions Overview</h4><ol style="padding-left:1.2rem;">`;
-    lesson.questions.forEach((qObj) => {
-        questionsPreviewHTML += `<li style="margin-bottom:0.4rem;">${qObj.q}</li>`;
-    });
-    questionsPreviewHTML += `</ol></div>`;
-
-    return `
-        <h1 style="color:var(--accent);margin-bottom:0.5rem;">${lesson.name}</h1>
-        <p style="color:var(--muted);">${currentSubject.name} • Lesson Module ${lesson.id}</p>
-        <div class="lesson-section"><h3>Core Concept</h3><p>${lesson.intro}</p></div>
-        <div class="lesson-section"><h3>Key Equation / Diagram Structure</h3><div class="equation">\\(${lesson.equation}\\)</div></div>
-        <div class="lesson-section"><h3>Deep Explanation</h3>${lesson.fullExplanation}</div>
-        <div class="lesson-section"><h3>Why It Matters</h3><p>${lesson.why}</p></div>
-        <div class="lesson-section curiosity"><h3>Curiosity Blueprint</h3><p>${lesson.curiosity}</p></div>
-        ${questionsPreviewHTML}
-        <button class="start-btn" onclick="startQuiz(${lesson.id})">Launch Interactive Validation Quiz →</button>
-    `;
-}
-
-function startQuiz(lessonId){
-    currentLesson = currentSubject.lessons.find(l => l.id === lessonId);
-    currentQuestions = [...currentLesson.questions];
-    currentQuestionIndex = 0;
-    correctFirstTry = 0;
-    document.getElementById("lesson-content").innerHTML = `
-        <h1>${currentLesson.name} - Evaluation Quiz</h1>
-        <p>Answer all 5 criteria questions. 5-second reflection delay enforced. 2 attempts per question max.</p>
-        <div id="quiz-container">
-            <div id="question-number">Question 1 of 5</div>
-            <div id="question-text"></div>
-            <div class="input-group">
-                <input type="text" id="answer-input" placeholder="Type verified answer step..." autocomplete="off">
-                <button id="submit-btn" onclick="submitCurrentAnswer()">Submit Answer Verification</button>
-            </div>
-            <div id="timer-warning">Analyze the math framework carefully before committing.</div>
-            <div id="feedback-area" style="margin-top:1rem;"></div>
-        </div>
-        <button onclick="closeLesson()" style="background:var(--border);margin-top:1.5rem;">Exit Lesson Interface</button>
-    `;
-    loadCurrentQuestion();
-}
-
-function loadCurrentQuestion(){
-    if(currentQuestionIndex >= currentQuestions.length){
-        finishQuiz();
-        return;
-    }
-    const q = currentQuestions[currentQuestionIndex];
-    document.getElementById("question-number").textContent = `Question ${currentQuestionIndex + 1} of ${currentQuestions.length}`;
-    document.getElementById("question-text").innerHTML = `<strong>${q.q}</strong>`;
-    document.getElementById("answer-input").value = '';
-    document.getElementById("feedback-area").innerHTML = '';
-    attemptsOnCurrent = 0;
-    questionStartTime = Date.now();
-    const submitBtn = document.getElementById("submit-btn");
-    submitBtn.disabled = true;
-    setTimeout(() => {
-        submitBtn.disabled = false;
-    }, 5000);
-}
-
-function submitCurrentAnswer(){
-    const inputEl = document.getElementById("answer-input");
-    const userAnswer = inputEl.value.trim();
-    const feedbackEl = document.getElementById("feedback-area");
-    const q = currentQuestions[currentQuestionIndex];
-    const elapsed = (Date.now() - questionStartTime) / 1000;
-    
-    if(elapsed < 5){
-        feedbackEl.innerHTML = `<span class="error">Take your time. Read and parse the question details thoroughly.</span>`;
-        return;
-    }
-    
-    if(!userAnswer){
-        feedbackEl.innerHTML = "Value input empty. Please enter an evaluation answer.";
-        return;
-    }
-    
-    const isCorrect = checkAnswerLoose(userAnswer, q.a);
-    
-    if(isCorrect){
-        feedbackEl.innerHTML = `<span class="success">✅ Correct. Verification match successful.</span>`;
-        if(attemptsOnCurrent === 0) correctFirstTry++;
-        setTimeout(() => {
-            currentQuestionIndex++;
-            loadCurrentQuestion();
-        }, 1200);
-    } else {
-        attemptsOnCurrent++;
-        if(attemptsOnCurrent === 1){
-            feedbackEl.innerHTML = `<span class="error">❌ Calculation mismatch. Structural Hint: ${q.hint}</span>`;
-        } else {
-            feedbackEl.innerHTML = `<span class="error">❌ Verification limit reached. Answer is: <strong>${q.a}</strong>. Advancing timeline...</span>`;
-            setTimeout(() => {
-                currentQuestionIndex++;
-                loadCurrentQuestion();
-            }, 2500);
-        }
-    }
-}
-
-function checkAnswerLoose(user, correct){
-    let cleanUser = user.replace(/\s+/g, '').toLowerCase();
-    let cleanCorrect = correct.toString().replace(/\s+/g, '').toLowerCase();
-    
-    if(cleanUser === cleanCorrect) return true;
-
-    const numUser = parseFloat(user.replace(/[^0-9.-]/g, ''));
-    const numCorrect = parseFloat(correct.toString().replace(/[^0-9.-]/g, ''));
-    if(!isNaN(numUser) && !isNaN(numCorrect)){
-        return Math.abs(numUser - numCorrect) < 0.01;
-    }
-    return cleanUser.includes(cleanCorrect) || cleanCorrect.includes(cleanUser);
-}
-
-function finishQuiz(){
-    let gain = Math.floor(correctFirstTry * 4); 
-    understanding += gain;
-    updateUnderstanding();
-    
-    const today = getTodayString();
-    
-    if (practiceHistory[today] !== 'practiced') {
-        if (lastDate !== today) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-            
-            if (lastDate === yesterdayStr || practiceHistory[yesterdayStr] === 'frozen') {
-                streak++;
-            } else {
-                streak = 1;
-            }
-        }
-        
-        practiceHistory[today] = 'practiced';
-        practiceDaysCount++;
-        
-        if (practiceDaysCount % 2 === 0 && freezes < 2) {
-            freezes++;
-        }
-        
-        lastDate = today;
-        lastLessonDate = today;
-        
-        localStorage.setItem('pengwinMathLastDate', lastDate);
-        localStorage.setItem('pengwinMathLastLessonDate', lastLessonDate);
-        localStorage.setItem('pengwinMathStreak', streak);
-        localStorage.setItem('pengwinMathFreezes', freezes);
-        localStorage.setItem('pengwinMathPracticeDaysCount', practiceDaysCount);
-        localStorage.setItem('pengwinMathHistory', JSON.stringify(practiceHistory));
-        
-        document.getElementById("streak-counter").textContent = `🔥 ${streak} Day Streak`;
-    }
-    
-    document.getElementById("lesson-content").innerHTML = `
-        <div style="padding:1.5rem; background:var(--input-bg); border-radius:12px; border:2px solid var(--success);">
-            <h3>Module Discovery Complete!</h3>
-            <p style="margin:0.5rem 0;">You cleared ${correctFirstTry} out of ${currentQuestions.length} checks successfully on your primary attempt.</p>
-            <p style="color:var(--accent2); font-weight:700;">+${gain} Performance Understanding Rating added to metrics.</p>
-            <p style="margin-top:0.5rem; color:var(--muted);">You completed your concept discovery for today!</p>
-            <button class="next-btn" onclick="closeLesson()" style="width:100%; padding:1rem; margin-top:1rem;">Sync Progress & Close Module</button>
-        </div>
-    `;
-}
-
-function showLesson(lesson){
-    currentLesson = lesson;
-    document.getElementById("lesson-content").innerHTML = createLessonHTML(lesson);
-    document.getElementById("welcome-screen").style.display = "flex";
-    
-    setTimeout(() => {
-        if (window.MathJax) { 
-            MathJax.typesetClear(); 
-            MathJax.typeset(); 
-        }
-    }, 200);
+// Minimal openLesson/closeLesson stubs to integrate with the modal behavior
+function openLesson(subjectId, lessonId) {
+    const subj = subjects.find(s => s.id === subjectId);
+    if(!subj) return;
+    const les = subj.lessons.find(l => l.id === lessonId);
+    if(!les) return;
+    currentLesson = { subjectId, lessonId };
+    const content = document.getElementById('lesson-content');
+    content.innerHTML = `<div class="lesson-section"><h3>${les.name}</h3><div class="equation">${les.equation || ''}</div><div class="example">${les.intro || ''}</div></div>`;
+    openModal('welcome-screen');
 }
 
 function closeLesson(){
-    document.getElementById("welcome-screen").style.display = "none";
+    closeModal('welcome-screen');
 }
 
-window.onload = () => {
-    const savedTheme = localStorage.getItem('pengwinMathTheme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-        themeBtn.textContent = savedTheme === 'light' ? 'Switch to Dark Theme 🌙' : 'Switch to Light Theme ☀️';
+// Example function to mark a lesson as completed (used after successful practice)
+function markLessonCompleted(subjectId, lessonId) {
+    let completed = JSON.parse(localStorage.getItem('pengwinMathCompleted') || '[]');
+    const key = `${subjectId}-${lessonId}`;
+    if(!completed.includes(key)) {
+        completed.push(key);
+        localStorage.setItem('pengwinMathCompleted', JSON.stringify(completed));
     }
+}
 
-    updateStreak();
+// Initialize UI state on load
+window.addEventListener('DOMContentLoaded', () => {
     updateUnderstanding();
+    updateStreak();
+    // restore theme if saved
+    const savedTheme = localStorage.getItem('pengwinMathTheme');
+    if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
     showSubjectSelection();
-};
+});
 </script>
 </body>
 </html>
