@@ -290,6 +290,19 @@ button:disabled{ background:#475569; cursor:not-allowed; }
 .auth-danger{ background:var(--danger); color:#fff; }
 .auth-danger:hover{ background:#dc2626; }
 
+/* Lesson progress */
+.card.recommended{ border-color:var(--accent); box-shadow:0 0 0 2px var(--accent) inset; }
+.chip{ display:inline-block; padding:0.2rem 0.7rem; border-radius:999px; font-size:0.78rem; font-weight:700; margin:0.6rem 0.35rem 0 0; background:var(--border); color:var(--text); }
+.chip.mastered{ background:rgba(34,197,94,0.2); color:var(--success); }
+.chip.learning{ background:rgba(249,115,22,0.2); color:var(--accent2); }
+.chip.next{ background:var(--accent); color:#fff; }
+.callout{ padding:1rem 1.25rem; border-radius:12px; border:1px solid var(--border); background:var(--input-bg); margin-bottom:1.5rem; }
+.callout.tip{ border-color:var(--accent); }
+.callout p{ color:var(--text); }
+.callout button{ margin-top:0.75rem; }
+.callout ul{ padding-left:1.2rem; margin-top:0.5rem; }
+.callout li{ margin-bottom:0.4rem; }
+
 @media (max-width:700px){
     .header-controls{ position:static; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
     header h1{ font-size:2.2rem; }
@@ -417,6 +430,16 @@ let questionStartTime = 0;
 let attemptsOnCurrent = 0;
 let correctFirstTry = 0;
 let pendingConfirmCallback = null;
+
+// Per-lesson progress: { "arithmetic:1": { tries, best, last, weak:[question text], updated } }
+// best/last = questions answered correctly on the first try (out of 5)
+let lessonStats = (function(){
+    try { return JSON.parse(localStorage.getItem('pengwinMathLessonStats') || '{}') || {}; }
+    catch(e) { return {}; }
+})();
+let quizLog = [];            // how each question went during the quiz in progress
+let answerLocked = false;    // stops a double-click from counting one answer twice
+const MASTERY_SCORE = 4;     // first-try correct answers (of 5) that count as "mastered"
 
 const subjects = [
 {
@@ -1029,15 +1052,90 @@ function openCalendarModal() {
     openModal('calendar-modal');
 }
 
+/* ---------- Progress-aware recommendations ---------- */
+
+function statKey(subject, lesson){ return subject.id + ':' + lesson.id; }
+
+function lessonStatus(subject, lesson){
+    const s = lessonStats[statKey(subject, lesson)];
+    if (!s) return 'new';
+    return s.best >= MASTERY_SCORE ? 'mastered' : 'learning';
+}
+
+// What this person should do next in a subject
+function recommendedLesson(subject){
+    let latest = null;
+    subject.lessons.forEach(l => {
+        const s = lessonStats[statKey(subject, l)];
+        if (s && (!latest || (s.updated || 0) > (latest.s.updated || 0))) latest = { l, s };
+    });
+    if (latest && latest.s.best < MASTERY_SCORE) return latest.l;          // finish what you started
+    const fresh = subject.lessons.find(l => !lessonStats[statKey(subject, l)]);
+    if (fresh) return fresh;                                               // next lesson you haven't tried
+    return subject.lessons.find(l => lessonStatus(subject, l) !== 'mastered') || null;   // anything left to polish
+}
+
+// Best suggestion across all subjects, starting with the one practiced most recently
+function overallRecommendation(){
+    let recentSubject = null, recentTime = -1;
+    subjects.forEach(sub => sub.lessons.forEach(l => {
+        const s = lessonStats[statKey(sub, l)];
+        if (s && (s.updated || 0) > recentTime) { recentTime = s.updated || 0; recentSubject = sub; }
+    }));
+    const order = recentSubject ? [recentSubject, ...subjects.filter(s => s !== recentSubject)] : subjects;
+    for (const sub of order) {
+        const l = recommendedLesson(sub);
+        if (l) return { subject: sub, lesson: l };
+    }
+    return null;
+}
+
+function openRecommended(){
+    const rec = overallRecommendation();
+    if (!rec) return;
+    showSubjectLessons(rec.subject);
+    showLesson(rec.lesson);
+}
+
+// Redraws whichever list is on screen so status badges stay up to date
+function refreshLessonViews(){
+    const inLessons = document.getElementById('lesson-list').style.display === 'block';
+    if (inLessons && currentSubject) showSubjectLessons(currentSubject);
+    else showSubjectSelection();
+}
+
 function showSubjectSelection(){
     document.getElementById("subject-selection").style.display = "block";
     document.getElementById("lesson-list").style.display = "none";
     const grid = document.getElementById("subject-grid");
     grid.innerHTML = "";
+
+    // "Picked for you" banner
+    const old = document.getElementById("recommend-banner");
+    if (old) old.remove();
+    const rec = overallRecommendation();
+    if (rec) {
+        const s = lessonStats[statKey(rec.subject, rec.lesson)];
+        const started = Object.keys(lessonStats).length > 0;
+        let text;
+        if (!started) text = `New here? A good place to begin is <strong>${rec.lesson.name}</strong> in ${rec.subject.name}.`;
+        else if (s) text = `Pick up where you left off: <strong>${rec.lesson.name}</strong> (${rec.subject.name}). Your best so far is ${s.best}/5.`;
+        else text = `Up next for you: <strong>${rec.lesson.name}</strong> in ${rec.subject.name}.`;
+        const banner = document.createElement("div");
+        banner.id = "recommend-banner";
+        banner.className = "callout tip";
+        banner.style.cssText = "text-align:center; max-width:640px; margin:0 auto 2rem;";
+        banner.innerHTML = `<p>${text}</p><button onclick="openRecommended()">Start this lesson →</button>`;
+        grid.parentNode.insertBefore(banner, grid);
+    }
+
     subjects.forEach(subject => {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = `<h2>${subject.name}</h2><p>${subject.lessons.length} Lessons Available</p>`;
+        const mastered = subject.lessons.filter(l => lessonStatus(subject, l) === 'mastered').length;
+        const tried = subject.lessons.filter(l => lessonStatus(subject, l) !== 'new').length;
+        const progressLine = tried ? `<p>${mastered} of ${subject.lessons.length} mastered</p>` : '';
+        card.innerHTML = `<h2>${subject.name}</h2><p>${subject.lessons.length} Lessons Available</p>${progressLine}`;
         card.onclick = () => {
             if(currentSubject && currentSubject.id !== subject.id){
                 confirmConceptSwitch(() => showSubjectLessons(subject));
@@ -1057,10 +1155,18 @@ function showSubjectLessons(subject){
     
     const grid = document.getElementById("lesson-grid");
     grid.innerHTML = "";
+    const recLesson = recommendedLesson(subject);
     subject.lessons.forEach(lesson => {
         const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `<div style="font-size:2.5rem;font-weight:800;color:var(--accent);">${lesson.id}</div><h2>${lesson.name}</h2>`;
+        const status = lessonStatus(subject, lesson);
+        const st = lessonStats[statKey(subject, lesson)];
+        const isRec = recLesson && recLesson.id === lesson.id;
+        card.className = "card" + (isRec ? " recommended" : "");
+        let chips = '';
+        if (isRec) chips += `<span class="chip next">★ Recommended</span>`;
+        if (status === 'mastered') chips += `<span class="chip mastered">✓ Mastered · best ${st.best}/5</span>`;
+        else if (status === 'learning') chips += `<span class="chip learning">In progress · best ${st.best}/5</span>`;
+        card.innerHTML = `<div style="font-size:2.5rem;font-weight:800;color:var(--accent);">${lesson.id}</div><h2>${lesson.name}</h2><div>${chips}</div>`;
         card.onclick = () => {
             if(currentLesson && currentLesson.id !== lesson.id){
                 confirmConceptSwitch(() => showLesson(lesson));
