@@ -316,7 +316,7 @@ footer{
 <body>
 <header>
     <h1>PengWin Studios</h1>
-    <p class="subtitle">One Discovery Per Day • Deep Understanding</p>
+    <p class="subtitle" id="header-subtitle">Giving you deep understanding</p>
     <div class="header-controls">
         <button class="more-btn" id="account-btn" onclick="openAccountModal()">Log In</button>
         <button class="more-btn" onclick="openMoreModal()">More</button>
@@ -325,17 +325,17 @@ footer{
 </header>
 <div class="container">
     <div class="understanding-card">
-        <h3>Deep Understanding Meter</h3>
+        <h3>XP Meter</h3>
         <div class="progress-bar">
             <div class="progress-fill" id="understandingFill"></div>
         </div>
-        <div class="progress-text" id="understandingText">0% • Beginning Explorer</div>
-        <p style="color:var(--muted);margin-top:1rem;">Progress only when you truly understand. One lesson per day.</p>
+        <div class="progress-text" id="understandingText">0 XP • Beginning Explorer</div>
+        <p style="color:var(--muted);margin-top:1rem;">Progress only when you truly understand.</p>
     </div>
     <div id="subject-selection">
         <div class="header-section" style="text-align:center;margin-bottom:2rem;">
             <h2>Choose Your Subject for Today</h2>
-            <p>One lesson per day — build real mastery</p>
+            <p>Build real mastery</p>
         </div>
         <div class="subject-grid" id="subject-grid"></div>
     </div>
@@ -353,6 +353,46 @@ footer{
     <div class="modal-content">
         <button class="close-btn" onclick="closeLesson()">✕</button>
         <div id="lesson-content"></div>
+    </div>
+</div>
+
+<!-- Onboarding Modal -->
+<div class="modal-overlay" id="onboarding-modal">
+    <div class="modal-content" style="max-width: 550px;">
+        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">Welcome to PengWin Math! 🐧</h2>
+        <p style="color:var(--muted); text-align:center; margin-bottom:1.5rem;">Let's tailor your learning journey to match your experience.</p>
+        
+        <div id="onboarding-step-1">
+            <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">What is your current math level?</h3>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('arithmetic')">🔢 Arithmetic (Addition, Fractions, Decimals)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('prealgebra')">📐 Pre-Algebra (Negative numbers, Exponents, Ratios)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('algebra')">📈 Algebra I (Equations, Slopes, Quadratics)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('geometry')">📐 Geometry Foundations (Triangles, Areas, Angles)</button>
+            </div>
+            <div style="display:flex; gap:1rem; justify-content:space-between;">
+                <button class="btn-secondary" onclick="skipOnboarding()">Skip Onboarding</button>
+                <button onclick="startPlacementTest()">Take Quick Level Test 🚀</button>
+            </div>
+        </div>
+
+        <div id="onboarding-step-2" style="display:none;">
+            <h3 style="font-size:1.2rem; margin-bottom:0.5rem;" id="placement-title">Level Placement Test</h3>
+            <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1rem;" id="placement-q"></p>
+            <input class="auth-input" type="text" id="placement-input" placeholder="Type your answer...">
+            <div id="placement-feedback" style="margin-bottom:1rem;"></div>
+            <button style="width:100%;" onclick="submitPlacementAnswer()">Submit Answer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Review Modal -->
+<div class="modal-overlay" id="review-modal">
+    <div class="modal-content" style="max-width: 550px;">
+        <button class="close-btn" onclick="closeModal('review-modal')">✕</button>
+        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">🧠 Monthly Spaced Review</h2>
+        <p style="color:var(--muted); text-align:center; margin-bottom:1.5rem;" id="review-subtitle">It's been about a month since you completed a key lesson. Let's do a quick memory refresh!</p>
+        <div id="review-content"></div>
     </div>
 </div>
 
@@ -394,6 +434,13 @@ footer{
             </button>
         </div>
 
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">About</h3>
+            <a href="https://pengwins.my.canva.site/math-app-about" target="_blank" style="text-decoration:none;">
+                <button style="width:100%;">About Page ↗</button>
+            </a>
+        </div>
+
         <div style="margin-bottom: 1rem;">
             <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">Contact & Support</h3>
             <a href="https://pengwins.my.canva.site/contact/" target="_blank" style="text-decoration:none;">
@@ -412,14 +459,14 @@ footer{
     </div>
 </div>
 
-<footer>PengWin Studios Math • One Concept a Day • Nonprofit app</footer>
+<footer>Mathematics Application</footer>
 
 <script>
 let understanding = parseInt(localStorage.getItem('pengwinMathUnderstanding')) || 0;
 let streak = parseInt(localStorage.getItem('pengwinMathStreak')) || 0;
 let practiceDaysCount = parseInt(localStorage.getItem('pengwinMathPracticeDaysCount')) || 0;
 let freezes = parseInt(localStorage.getItem('pengwinMathFreezes')) || 0;
-let practiceHistory = JSON.parse(localStorage.getItem('pengwinMathHistory')) || {}; // { "YYYY-MM-DD": "practiced" | "frozen" }
+let practiceHistory = JSON.parse(localStorage.getItem('pengwinMathHistory')) || {}; 
 let lastDate = localStorage.getItem('pengwinMathLastDate');
 let lastLessonDate = localStorage.getItem('pengwinMathLastLessonDate') || '';
 let currentSubject = null;
@@ -901,6 +948,46 @@ const subjects = [
             {q: "What transformation turns a figure around a fixed point?", a: "rotation", hint: "Turning around an axis center point."},
             {q: "Does a standard square have line symmetry? (Type yes or no)", a: "yes", hint: "Squares fold evenly along 4 symmetry lines."},
             {q: "What transformation resizes a shape larger or smaller?", a: "dilation", hint: "Dilation scales lengths using a center factor."}
+         ]},
+        {id:11, name:"Coordinate Geometry & Distance", equation:"d = \\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}", intro:"Calculating distances and midpoints on coordinate planes.", fullExplanation:`<p>The distance formula derives directly from the Pythagorean theorem to find the straight-line distance between any two coordinate points.</p>`, why:"GPS navigation mapping, computer graphics rendering.", curiosity:"René Descartes connected algebra and geometry in 1637.", 
+         questions: [
+            {q: "What is the distance between (0,0) and (3,4)?", a: "5", hint: "Apply √( (3-0)² + (4-0)² )."},
+            {q: "Find the midpoint between (0,0) and (4,6).", a: "(2,3)", hint: "Average the x coordinates and y coordinates."},
+            {q: "What is the distance between (1,1) and (4,5)?", a: "5", hint: "√((4-1)² + (5-1)²) = √(3² + 4²)."},
+            {q: "Find the midpoint between (2,3) and (6,7).", a: "(4,5)", hint: "Midpoint formula: ((x1+x2)/2, (y1+y2)/2)."},
+            {q: "What is the distance between (0,0) and (0,5)?", a: "5", hint: "Direct vertical distance on the y-axis."}
+         ]},
+        {id:12, name:"Special Right Triangles", equation:"1:1:\\sqrt{2} \\quad \\text{and} \\quad 1:\\sqrt{3}:2", intro:"Ratio shortcuts for 45-45-90 and 30-60-90 triangles.", fullExplanation:`<p>Special right triangles have predictable side length ratios that allow instant calculation without full Pythagorean theorem steps.</p>`, why:"Architecture framing, trigonometry foundations.", curiosity:"Carpenters use 3-4-5 and special ratios for square layout checks.", 
+         questions: [
+            {q: "In a 45-45-90 triangle with leg 5, what is the hypotenuse? (e.g. 5√2)", a: "5√2", hint: "Multiply the leg length by √2."},
+            {q: "In a 30-60-90 triangle, side opposite 30° is 4. What is the hypotenuse?", a: "8", hint: "Hypotenuse is twice the length of the shorter leg."},
+            {q: "In a 45-45-90 triangle, if hypotenuse is 10√2, what is the leg length?", a: "10", hint: "Divide hypotenuse by √2."},
+            {q: "In a 30-60-90 triangle with shorter leg 3, what is the longer leg opposite 60°? (e.g. 3√3)", a: "3√3", hint: "Multiply shorter leg by √3."},
+            {q: "What is the sum of acute angles in any right triangle in degrees?", a: "90", hint: "180 total minus 90 for the right angle."}
+         ]},
+        {id:13, name:"Area of Sectors and Regular Polygons", equation:"A_{\\text{sector}} = \\pi r^2 \\times \\frac{\\theta}{360^\\circ}", intro:"Calculating fractional circle areas and regular polygon regions.", fullExplanation:`<p>Sectors represent pie-slice regions of circles proportional to their central angle degrees.</p>`, why:"Pizza slicing, pie charts, mechanical gear design.", curiosity:"Ancient Greek mathematicians used inscribed polygons to approximate Pi.", 
+         questions: [
+            {q: "What fraction of a full circle is a 90° sector?", a: "1/4", hint: "Divide 90 by 360."},
+            {q: "If circle area is 100, what is the area of a 180° semicircle?", a: "50", hint: "Half of the total circle area."},
+            {q: "What is the central angle of a regular hexagon's slice from the center?", a: "60", hint: "360 degrees divided by 6 sides."},
+            {q: "Find the area of a sector with circle area 80 and angle 90°.", a: "20", hint: "One-fourth of 80."},
+            {q: "If radius is 6, what is the total area of the circle using π? (e.g. 36π)", a: "36π", hint: "Area = πr²."}
+         ]},
+        {id:14, name:"Volume of Spheres, Cones, and Pyramids", equation:"V_{\\text{sphere}} = \\frac{4}{3}\\pi r^3", intro:"Advanced 3D solid volume formulas.", fullExplanation:`<p>Spheres, cones, and pyramids require specialized calculus-derived formulas relating height and radius constraints.</p>`, why:"Manufacturing spherical tanks, architecture domes, aerospace design.", curiosity:"Archimedes proved that a cylinder enclosing a sphere has exactly 1.5 times its volume and surface area.", 
+         questions: [
+            {q: "What is the volume of a cone with base area 15 and height 9? (V = 1/3 Bh)", a: "45", hint: "One-third of base area times height."},
+            {q: "If a sphere has radius 3, what is r³?", a: "27", hint: "3 × 3 × 3."},
+            {q: "What is the volume multiplier for a cone compared to a cylinder with identical base and height?", a: "1/3", hint: "A cone holds one-third the volume of a matching cylinder."},
+            {q: "If a pyramid has base area 24 and height 6, what is its volume?", a: "48", hint: "V = (1/3) × 24 × 6."},
+            {q: "What is the volume of a sphere with radius r = 0?", a: "0", hint: "Zero radius means zero volumetric space."}
+         ]},
+        {id:15, name:"Introduction to Trigonometry", equation:"\\sin(\\theta) = \\frac{\\text{Opposite}}{\\text{Hypotenuse}}", intro:"Relating angle measures to triangle side ratios.", fullExplanation:`<p>Trigonometric ratios (Sine, Cosine, Tangent - SOH CAH TOA) connect interior angles to proportional side lengths in right triangles.</p>`, why:"Navigation, astronomy, audio signal engineering, video game physics.", curiosity:"Trigonometry tables were originally calculated by ancient Greek and Islamic astronomers using chord lengths.", 
+         questions: [
+            {q: "What does the 'S' in SOH stand for?", a: "sine", hint: "Sine equals Opposite over Hypotenuse."},
+            {q: "In a right triangle, if Opposite is 3 and Hypotenuse is 5, what is sin(θ)?", a: "3/5", hint: "Opposite divided by Hypotenuse."},
+            {q: "What does the 'T' in TOA stand for?", a: "tangent", hint: "Tangent equals Opposite over Adjacent."},
+            {q: "If Cosine is Adjacent over Hypotenuse, what is the acronym abbreviation?", a: "cah", hint: "CAH: Cosine = Adjacent / Hypotenuse."},
+            {q: "What is the tangent of an angle if Opposite equals Adjacent?", a: "1", hint: "Any number divided by itself equals 1."}
          ]}
     ]
 }
@@ -919,7 +1006,7 @@ function updateUnderstanding(){
     const maxUnderstandingPoints = 500; 
     const percent = Math.min(Math.round((understanding / maxUnderstandingPoints) * 100), 100);
     document.getElementById("understandingFill").style.width = percent + "%";
-    document.getElementById("understandingText").textContent = percent + "% • " + getRank();
+    document.getElementById("understandingText").textContent = understanding + " XP • " + getRank();
     localStorage.setItem('pengwinMathUnderstanding', understanding);
     if (typeof queueCloudSave === 'function') queueCloudSave();
 }
@@ -1301,6 +1388,16 @@ function checkAnswerLoose(user, correct){
 function finishQuiz(){
     let gain = Math.floor(correctFirstTry * 4); 
     understanding += gain;
+    
+    const key = statKey(currentSubject, currentLesson);
+    const prevBest = lessonStats[key] ? lessonStats[key].best : 0;
+    lessonStats[key] = {
+        best: Math.max(prevBest, correctFirstTry),
+        updated: Date.now(),
+        completedAt: Date.now()
+    };
+    localStorage.setItem('pengwinMathLessonStats', JSON.stringify(lessonStats));
+
     updateUnderstanding();
     
     const today = getTodayString();
@@ -1342,7 +1439,7 @@ function finishQuiz(){
         <div style="padding:1.5rem; background:var(--input-bg); border-radius:12px; border:2px solid var(--success);">
             <h3>Module Discovery Complete!</h3>
             <p style="margin:0.5rem 0;">You cleared ${correctFirstTry} out of ${currentQuestions.length} checks successfully on your primary attempt.</p>
-            <p style="color:var(--accent2); font-weight:700;">+${gain} Performance Understanding Rating added to metrics.</p>
+            <p style="color:var(--accent2); font-weight:700;">+${gain} XP added to your total.</p>
             <p style="margin-top:0.5rem; color:var(--muted);">You completed your concept discovery for today!</p>
             <button class="next-btn" onclick="closeLesson()" style="width:100%; padding:1rem; margin-top:1rem;">Sync Progress & Close Module</button>
         </div>
@@ -1364,6 +1461,132 @@ function showLesson(lesson){
 
 function closeLesson(){
     document.getElementById("welcome-screen").style.display = "none";
+}
+
+/* Onboarding & Placement Test Logic */
+let placementStep = 0;
+let placementQuestions = [
+    {q: "What is 15 + 27?", a: "42", level: "arithmetic"},
+    {q: "Solve for x: 3x - 4 = 11", a: "5", level: "algebra"},
+    {q: "In a right triangle with legs 3 and 4, what is the hypotenuse?", a: "5", level: "geometry"}
+];
+
+function checkOnboarding() {
+    const onboarded = localStorage.getItem('pengwinMathOnboarded');
+    if (!onboarded) {
+        document.getElementById('onboarding-modal').style.display = 'flex';
+    } else {
+        checkMonthlyReviews();
+    }
+}
+
+function setOnboardLevel(levelId) {
+    localStorage.setItem('pengwinMathOnboarded', 'true');
+    document.getElementById('onboarding-modal').style.display = 'none';
+    const sub = subjects.find(s => s.id === levelId);
+    if (sub) {
+        showSubjectLessons(sub);
+    }
+    checkMonthlyReviews();
+}
+
+function skipOnboarding() {
+    localStorage.setItem('pengwinMathOnboarded', 'true');
+    document.getElementById('onboarding-modal').style.display = 'none';
+    checkMonthlyReviews();
+}
+
+function startPlacementTest() {
+    placementStep = 0;
+    document.getElementById('onboarding-step-1').style.display = 'none';
+    document.getElementById('onboarding-step-2').style.display = 'block';
+    loadPlacementQuestion();
+}
+
+function loadPlacementQuestion() {
+    if (placementStep >= placementQuestions.length) {
+        localStorage.setItem('pengwinMathOnboarded', 'true');
+        document.getElementById('onboarding-modal').style.display = 'none';
+        document.getElementById('onboarding-step-1').style.display = 'block';
+        document.getElementById('onboarding-step-2').style.display = 'none';
+        showSubjectSelection();
+        checkMonthlyReviews();
+        return;
+    }
+    const qObj = placementQuestions[placementStep];
+    document.getElementById('placement-title').textContent = `Placement Question ${placementStep + 1} of ${placementQuestions.length}`;
+    document.getElementById('placement-q').textContent = qObj.q;
+    document.getElementById('placement-input').value = '';
+    document.getElementById('placement-feedback').innerHTML = '';
+}
+
+function submitPlacementAnswer() {
+    const val = document.getElementById('placement-input').value.trim();
+    const qObj = placementQuestions[placementStep];
+    if (checkAnswerLoose(val, qObj.a)) {
+        document.getElementById('placement-feedback').innerHTML = `<span class="success">Correct!</span>`;
+        placementStep++;
+        setTimeout(loadPlacementQuestion, 1000);
+    } else {
+        document.getElementById('placement-feedback').innerHTML = `<span class="error">Not quite. The correct answer was ${qObj.a}. Moving on...</span>`;
+        placementStep++;
+        setTimeout(loadPlacementQuestion, 1500);
+    }
+}
+
+/* Monthly Review Spaced Repetition Logic */
+function checkMonthlyReviews() {
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    let reviewTarget = null;
+    
+    for (const sub of subjects) {
+        for (const lesson of sub.lessons) {
+            const st = lessonStats[statKey(sub, lesson)];
+            if (st && st.completedAt && st.completedAt <= thirtyDaysAgo && !st.reviewedRecently) {
+                reviewTarget = { subject: sub, lesson: lesson, stat: st };
+                break;
+            }
+        }
+        if (reviewTarget) break;
+    }
+
+    if (reviewTarget) {
+        triggerReviewModal(reviewTarget);
+    }
+}
+
+function triggerReviewModal(target) {
+    const modal = document.getElementById('review-modal');
+    const content = document.getElementById('review-content');
+    const q = target.lesson.questions[0]; 
+    
+    content.innerHTML = `
+        <h3 style="color:var(--accent2); margin-bottom:0.75rem;">${target.subject.name}: ${target.lesson.name}</h3>
+        <p style="margin-bottom:1rem;">You completed this lesson about a month ago. Let's test your memory with a quick review question:</p>
+        <div class="example"><strong>${q.q}</strong></div>
+        <input class="auth-input" type="text" id="review-answer-input" placeholder="Type your answer...">
+        <div id="review-feedback" style="margin-bottom:1rem;"></div>
+        <button style="width:100%;" onclick="submitReviewAnswer('${target.subject.id}', ${target.lesson.id}, '${q.a}')">Submit Review Answer</button>
+    `;
+    modal.style.display = 'flex';
+}
+
+function submitReviewAnswer(subId, lessonId, correctAns) {
+    const val = document.getElementById('review-answer-input').value.trim();
+    const feedback = document.getElementById('review-feedback');
+    if (checkAnswerLoose(val, correctAns)) {
+        feedback.innerHTML = `<span class="success">✅ Excellent memory! Review passed successfully.</span>`;
+        const key = subId + ':' + lessonId;
+        if (lessonStats[key]) {
+            lessonStats[key].reviewedRecently = true;
+            lessonStats[key].completedAt = Date.now(); 
+            localStorage.setItem('pengwinMathLessonStats', JSON.stringify(lessonStats));
+        }
+        setTimeout(() => closeModal('review-modal'), 2000);
+    } else {
+        feedback.innerHTML = `<span class="error">❌ Not quite. The correct answer is ${correctAns}. Keep practicing!</span>`;
+        setTimeout(() => closeModal('review-modal'), 2500);
+    }
 }
 
 const SUPABASE_URL = 'https://mjzhtuourbocdpzhzvho.supabase.co';
@@ -1454,9 +1677,16 @@ function $v(id){ const el = document.getElementById(id); return el ? el.value : 
 
 function updateAccountUI(){
     const btn = document.getElementById('account-btn');
+    const subtitle = document.getElementById('header-subtitle');
     if (!btn) return;
-    if (!currentUser) btn.textContent = 'Log In';
-    else btn.textContent = '👤 ' + ((currentProfile && currentProfile.username) || 'Account');
+    if (!currentUser) {
+        btn.textContent = 'Log In';
+        if (subtitle) subtitle.textContent = 'Giving you deep understanding';
+    } else {
+        const username = (currentProfile && currentProfile.username) || 'Account';
+        btn.textContent = '👤 ' + username;
+        if (subtitle) subtitle.textContent = `Welcome back, ${username}! • Tailored Math Mastery`;
+    }
 }
 
 function setAuthMessage(msg, type){
@@ -1881,6 +2111,7 @@ window.onload = () => {
     updateStreak();
     updateUnderstanding();
     showSubjectSelection();
+    checkOnboarding();
 };
 </script>
 </body>
