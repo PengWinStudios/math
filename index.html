@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PengWin Studios Math • Daily Discoveries</title>
+<title>Mathematics Application</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -431,15 +431,13 @@ let attemptsOnCurrent = 0;
 let correctFirstTry = 0;
 let pendingConfirmCallback = null;
 
-// Per-lesson progress: { "arithmetic:1": { tries, best, last, weak:[question text], updated } }
-// best/last = questions answered correctly on the first try (out of 5)
 let lessonStats = (function(){
     try { return JSON.parse(localStorage.getItem('pengwinMathLessonStats') || '{}') || {}; }
     catch(e) { return {}; }
 })();
-let quizLog = [];            // how each question went during the quiz in progress
-let answerLocked = false;    // stops a double-click from counting one answer twice
-const MASTERY_SCORE = 4;     // first-try correct answers (of 5) that count as "mastered"
+let quizLog = [];            
+let answerLocked = false;    
+const MASTERY_SCORE = 4;     
 
 const subjects = [
 {
@@ -933,7 +931,6 @@ function getTodayString() {
 function updateStreak(){
     const today = getTodayString();
     
-    // Check missing days & process freezes
     if (lastDate && lastDate !== today) {
         let currentDate = new Date(lastDate);
         currentDate.setDate(currentDate.getDate() + 1);
@@ -1052,8 +1049,6 @@ function openCalendarModal() {
     openModal('calendar-modal');
 }
 
-/* ---------- Progress-aware recommendations ---------- */
-
 function statKey(subject, lesson){ return subject.id + ':' + lesson.id; }
 
 function lessonStatus(subject, lesson){
@@ -1062,20 +1057,18 @@ function lessonStatus(subject, lesson){
     return s.best >= MASTERY_SCORE ? 'mastered' : 'learning';
 }
 
-// What this person should do next in a subject
 function recommendedLesson(subject){
     let latest = null;
     subject.lessons.forEach(l => {
         const s = lessonStats[statKey(subject, l)];
         if (s && (!latest || (s.updated || 0) > (latest.s.updated || 0))) latest = { l, s };
     });
-    if (latest && latest.s.best < MASTERY_SCORE) return latest.l;          // finish what you started
+    if (latest && latest.s.best < MASTERY_SCORE) return latest.l;          
     const fresh = subject.lessons.find(l => !lessonStats[statKey(subject, l)]);
-    if (fresh) return fresh;                                               // next lesson you haven't tried
-    return subject.lessons.find(l => lessonStatus(subject, l) !== 'mastered') || null;   // anything left to polish
+    if (fresh) return fresh;                                               
+    return subject.lessons.find(l => lessonStatus(subject, l) !== 'mastered') || null;   
 }
 
-// Best suggestion across all subjects, starting with the one practiced most recently
 function overallRecommendation(){
     let recentSubject = null, recentTime = -1;
     subjects.forEach(sub => sub.lessons.forEach(l => {
@@ -1097,7 +1090,6 @@ function openRecommended(){
     showLesson(rec.lesson);
 }
 
-// Redraws whichever list is on screen so status badges stay up to date
 function refreshLessonViews(){
     const inLessons = document.getElementById('lesson-list').style.display === 'block';
     if (inLessons && currentSubject) showSubjectLessons(currentSubject);
@@ -1110,7 +1102,6 @@ function showSubjectSelection(){
     const grid = document.getElementById("subject-grid");
     grid.innerHTML = "";
 
-    // "Picked for you" banner
     const old = document.getElementById("recommend-banner");
     if (old) old.remove();
     const rec = overallRecommendation();
@@ -1375,12 +1366,6 @@ function closeLesson(){
     document.getElementById("welcome-screen").style.display = "none";
 }
 
-/* =========================================================
-   SUPABASE ACCOUNTS + CLOUD PROGRESS SYNC
-   Paste your own values from Supabase → Project Settings → API
-   (the anon / publishable key is safe to expose in browser code;
-    NEVER put the service_role / secret key here)
-   ========================================================= */
 const SUPABASE_URL = 'https://mjzhtuourbocdpzhzvho.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_oxNVM3cMMkxl2PXpm8T8Cw_dND1TZcn';
 
@@ -1403,7 +1388,6 @@ function persistLocal(){
 function queueCloudSave(){
     if (!sb || !currentUser) return;
     clearTimeout(cloudSaveTimer);
-    // small delay so streak/history changes made right after the quiz are included
     cloudSaveTimer = setTimeout(saveToCloud, 600);
 }
 
@@ -1441,13 +1425,12 @@ async function syncFromCloud(){
             lastLessonDate = data.last_lesson_date || '';
             practiceHistory = Object.assign({}, practiceHistory, cloudHistory);
         } else {
-            // This device has more progress: keep it and merge in any extra history days
             practiceHistory = Object.assign({}, cloudHistory, practiceHistory);
         }
     }
     persistLocal();
-    updateStreak();          // re-checks missed days against the loaded data
-    updateUnderstanding();   // refreshes the meter (and queues a cloud save)
+    updateStreak();          
+    updateUnderstanding();   
 }
 
 function resetLocalProgress(){
@@ -1460,8 +1443,8 @@ function resetLocalProgress(){
 }
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,20}$/;
-let currentProfile = null;   // { username } once loaded
-let authCtx = {};            // scratch state carried between steps (email, flags)
+let currentProfile = null;   
+let authCtx = {};            
 let authBusy = false;
 
 function esc(s){
@@ -1483,7 +1466,6 @@ function setAuthMessage(msg, type){
     el.textContent = msg || '';
 }
 
-// Runs one auth action at a time and disables the buttons while it works
 async function authRun(task){
     if (authBusy) return;
     authBusy = true;
@@ -1503,8 +1485,6 @@ async function loadProfile(){
     if (error) console.error('Profile load failed:', error.message);
     currentProfile = data || null;
 
-    // Account created before usernames existed, or the profile row is missing:
-    // fall back to the username typed at sign-up, if there is one
     const wanted = currentUser.user_metadata && currentUser.user_metadata.username;
     if (!currentProfile && wanted && USERNAME_RE.test(wanted)) {
         const { error: upErr } = await sb.from('profiles').upsert({ user_id: currentUser.id, username: wanted });
@@ -1556,7 +1536,7 @@ function renderAuth(view, opts){
     case 'signup':
         t = 'Create Account';
         html = `
-            <p class="auth-note">We'll email you a code to confirm your address.</p>
+            <p class="auth-note">We'll email you a 6-digit code to confirm your address.</p>
             <input class="auth-input" type="text" id="auth-username" placeholder="Username (3–20 letters, numbers, _)" maxlength="20" autocomplete="username" autocapitalize="none" spellcheck="false">
             <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email">
             <input class="auth-input" type="password" id="auth-password" placeholder="Password (min. 8 characters)" autocomplete="new-password" ${enter('authSignUp')}>
@@ -1568,7 +1548,7 @@ function renderAuth(view, opts){
     case 'verifysignup':
         t = 'Enter Your Code';
         html = `
-            <p class="auth-note">We sent a code to<br><strong style="color:var(--text);">${esc(authCtx.email || '')}</strong><br>Check your spam folder if it doesn't show up.</p>
+            <p class="auth-note">We sent a 6-digit code to<br><strong style="color:var(--text);">${esc(authCtx.email || '')}</strong><br>Check your spam folder if it doesn't show up.</p>
             <input class="auth-input code-input" type="text" id="auth-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" ${enter('authVerifySignup')}>
             <button style="width:100%;" onclick="authRun(authVerifySignup)">Confirm</button>
             <button class="auth-link" onclick="authRun(authResendSignup)">Send a new code</button>
@@ -1598,7 +1578,7 @@ function renderAuth(view, opts){
             <div id="auth-message"></div>`;
         break;
 
-    case 'newpassword':   // only used if someone arrives through an old-style reset link
+    case 'newpassword':   
         t = 'Set a New Password';
         html = `
             <input class="auth-input" type="password" id="auth-new-password" placeholder="New password (min. 8 characters)" autocomplete="new-password" ${enter('authUpdatePassword')}>
@@ -1665,7 +1645,6 @@ function renderAuth(view, opts){
     title.textContent = t;
     body.innerHTML = html;
 
-    // Fill in values safely (never through innerHTML)
     const emailBox = document.getElementById('auth-email');
     if (emailBox && prevEmail) emailBox.value = prevEmail;
     const acctEmail = document.getElementById('acct-email');
@@ -1678,8 +1657,6 @@ function renderAuth(view, opts){
     if (codeBox) codeBox.focus();
 }
 
-/* ---------- Log in / sign up / confirm ---------- */
-
 async function authLogin(){
     const email = $v('auth-email').trim();
     const password = $v('auth-password');
@@ -1688,7 +1665,6 @@ async function authLogin(){
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
         if (/not confirmed/i.test(error.message)) {
-            // Account exists but the email was never confirmed: send a fresh code
             authCtx.email = email;
             await sb.auth.resend({ type: 'signup', email });
             renderAuth('verifysignup', { message: "Your email isn't confirmed yet. We sent you a new code.", type: 'success' });
@@ -1709,41 +1685,54 @@ async function authSignUp(){
     if (!email) { setAuthMessage('Enter your email.', 'error'); return; }
     if (password.length < 8) { setAuthMessage('Password must be at least 8 characters.', 'error'); return; }
 
-    setAuthMessage('Creating account…');
+    setAuthMessage('Checking username…');
     const free = await usernameAvailable(username);
     if (free === null) { setAuthMessage("Couldn't check that username. Please try again in a moment.", 'error'); return; }
     if (!free) { setAuthMessage('That username is taken. Try another one.', 'error'); return; }
 
-    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { username } } });
+    setAuthMessage('Sending verification code…');
+    authCtx.email = email;
+    authCtx.password = password;
+    authCtx.username = username;
+
+    const { data, error } = await sb.auth.signInWithOtp({ 
+        email, 
+        options: { 
+            shouldCreateUser: true, 
+            data: { username } 
+        } 
+    });
     if (error) { setAuthMessage(error.message, 'error'); return; }
 
-    // Supabase hides whether an email is already registered; an empty identities list is the tell
-    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        setAuthMessage('An account with this email already exists. Try logging in, or use "Forgot password?".', 'error');
-        return;
-    }
-    if (data.session) { closeModal('account-modal'); return; }   // confirmation switched off in Supabase
-
-    authCtx.email = email;
-    renderAuth('verifysignup', { message: 'Code sent! It can take a minute to arrive.', type: 'success' });
+    renderAuth('verifysignup', { message: 'Code sent! Check your inbox for the 6-digit code.', type: 'success' });
 }
 
 async function authVerifySignup(){
     const token = $v('auth-code').replace(/\s+/g, '');
-    if (!token) { setAuthMessage('Enter the code from your email.', 'error'); return; }
-    setAuthMessage('Checking code…');
-    const { error } = await sb.auth.verifyOtp({ email: authCtx.email, token, type: 'signup' });
+    if (!token) { setAuthMessage('Enter the 6-digit code from your email.', 'error'); return; }
+    setAuthMessage('Verifying code…');
+    
+    const { data, error } = await sb.auth.verifyOtp({ email: authCtx.email, token, type: 'email' });
     if (error) { setAuthMessage(error.message, 'error'); return; }
+
+    if (authCtx.password) {
+        await sb.auth.updateUser({ password: authCtx.password });
+        authCtx.password = null;
+    }
+
+    if (authCtx.username && data.user) {
+        await sb.from('profiles').upsert({ user_id: data.user.id, username: authCtx.username });
+        authCtx.username = null;
+    }
+
     closeModal('account-modal');
 }
 
 async function authResendSignup(){
-    const { error } = await sb.auth.resend({ type: 'signup', email: authCtx.email });
+    const { error } = await sb.auth.signInWithOtp({ email: authCtx.email, options: { shouldCreateUser: true } });
     if (error) { setAuthMessage(error.message, 'error'); return; }
     setAuthMessage('New code sent.', 'success');
 }
-
-/* ---------- Forgot password (by code) ---------- */
 
 async function authSendResetCode(){
     const email = $v('auth-email').trim() || authCtx.email || '';
@@ -1765,7 +1754,7 @@ async function authResetWithCode(){
     if (!authCtx.recoveryVerified) {
         const { error } = await sb.auth.verifyOtp({ email: authCtx.email, token, type: 'recovery' });
         if (error) { setAuthMessage(error.message, 'error'); return; }
-        authCtx.recoveryVerified = true;   // codes work once, so don't verify again on a retry
+        authCtx.recoveryVerified = true;   
     }
     const { error: pwErr } = await sb.auth.updateUser({ password: pw });
     if (pwErr) { setAuthMessage(pwErr.message, 'error'); return; }
@@ -1776,7 +1765,6 @@ async function authResetWithCode(){
     setTimeout(() => closeModal('account-modal'), 1500);
 }
 
-// Only for old-style reset links (not used once the email template shows a code)
 async function authUpdatePassword(){
     const pw = $v('auth-new-password');
     if (pw.length < 8) { setAuthMessage('Password must be at least 8 characters.', 'error'); return; }
@@ -1785,8 +1773,6 @@ async function authUpdatePassword(){
     setAuthMessage('Password updated! You are signed in.', 'success');
     setTimeout(() => closeModal('account-modal'), 1500);
 }
-
-/* ---------- Account: username, email, sign out, delete ---------- */
 
 async function authSaveUsername(){
     const name = $v('auth-username').trim();
@@ -1833,12 +1819,11 @@ async function authVerifyEmailChange(){
     const { data: fresh } = await sb.auth.getUser();
     const u = fresh && fresh.user;
     if (u && u.new_email) {
-        // "Secure email change" is on in Supabase: the old address has to confirm as well
         authCtx.pendingEmail = u.email;
         renderAuth('verifyemail', { message: 'One more step: enter the code we sent to your current address.', type: 'success' });
         return;
     }
-    if (u) currentUser = u;   // same account, so it is safe to refresh it here
+    if (u) currentUser = u;   
     renderAuth('account', { message: 'Email updated' + (u ? ' to ' + u.email : '') + '.', type: 'success' });
 }
 
@@ -1855,10 +1840,10 @@ async function authSignOut(){
 
 async function authDeleteAccount(){
     if ($v('auth-confirm-text').trim() !== 'DELETE') { setAuthMessage('Type DELETE (in capitals) to confirm.', 'error'); return; }
-    clearTimeout(cloudSaveTimer);   // don't let a pending save run against a deleted account
+    clearTimeout(cloudSaveTimer);   
     const { error } = await sb.rpc('delete_my_account');
     if (error) { setAuthMessage(error.message, 'error'); return; }
-    await sb.auth.signOut({ scope: 'local' });   // the account is gone, so just clear this browser's session
+    await sb.auth.signOut({ scope: 'local' });   
     renderAuth('deleted');
 }
 
@@ -1866,21 +1851,19 @@ function initAuth(){
     updateAccountUI();
     if (!sb) return;
     sb.auth.onAuthStateChange((event, session) => {
-        // setTimeout avoids calling Supabase inside its own auth callback (can deadlock)
         setTimeout(async () => {
             const wasUser = currentUser;
             currentUser = session ? session.user : null;
             if (!currentUser) currentProfile = null;
             updateAccountUI();
 
-            // Old-style reset links only; the code-based reset handles its own screen
             if (event === 'PASSWORD_RECOVERY' && !authCtx.codeReset) openAccountModal('recovery');
 
             if (currentUser && (!wasUser || wasUser.id !== currentUser.id)) {
                 await loadProfile();
                 await syncFromCloud();
             } else if (!currentUser && wasUser && event === 'SIGNED_OUT') {
-                resetLocalProgress();   // don't leave one person's progress on a shared device
+                resetLocalProgress();   
             }
         }, 0);
     });
