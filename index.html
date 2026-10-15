@@ -315,12 +315,12 @@ footer{
 </head>
 <body>
 <header>
-    <h1>PengWin Studios</h1>
+    <h1>Mathematics Application</h1>
     <p class="subtitle" id="header-subtitle">Giving you deep understanding</p>
     <div class="header-controls">
-        <button class="more-btn" id="account-btn" onclick="openAccountModal()">Log In</button>
+        <button class="more-btn" id="account-btn" onclick="openAccountModal()">Sign in/up</button>
         <button class="more-btn" onclick="openMoreModal()">More</button>
-        <div class="streak" id="streak-counter" onclick="openCalendarModal()">🔥 0 Day Streak</div>
+        <div class="streak" id="streak-counter" onclick="openCalendarModal()">Streak: 0 Days</div>
     </div>
 </header>
 <div class="container">
@@ -359,20 +359,20 @@ footer{
 <!-- Onboarding Modal -->
 <div class="modal-overlay" id="onboarding-modal">
     <div class="modal-content" style="max-width: 550px;">
-        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">Welcome to PengWin Math! 🐧</h2>
+        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">Welcome to Mathematics Application</h2>
         <p style="color:var(--muted); text-align:center; margin-bottom:1.5rem;">Let's tailor your learning journey to match your experience.</p>
         
         <div id="onboarding-step-1">
             <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">What is your current math level?</h3>
             <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
-                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('arithmetic')">🔢 Arithmetic (Addition, Fractions, Decimals)</button>
-                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('prealgebra')">📐 Pre-Algebra (Negative numbers, Exponents, Ratios)</button>
-                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('algebra')">📈 Algebra I (Equations, Slopes, Quadratics)</button>
-                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('geometry')">📐 Geometry Foundations (Triangles, Areas, Angles)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('arithmetic')">Arithmetic (Addition, Fractions, Decimals)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('prealgebra')">Pre-Algebra (Negative numbers, Exponents, Ratios)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('algebra')">Algebra I (Equations, Slopes, Quadratics)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('geometry')">Geometry Foundations (Triangles, Areas, Angles)</button>
             </div>
             <div style="display:flex; gap:1rem; justify-content:space-between;">
                 <button class="btn-secondary" onclick="skipOnboarding()">Skip Onboarding</button>
-                <button onclick="startPlacementTest()">Take Quick Level Test 🚀</button>
+                <button onclick="startPlacementTest()">Take Quick Level Test</button>
             </div>
         </div>
 
@@ -390,7 +390,7 @@ footer{
 <div class="modal-overlay" id="review-modal">
     <div class="modal-content" style="max-width: 550px;">
         <button class="close-btn" onclick="closeModal('review-modal')">✕</button>
-        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">🧠 Monthly Spaced Review</h2>
+        <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">Monthly Spaced Review</h2>
         <p style="color:var(--muted); text-align:center; margin-bottom:1.5rem;" id="review-subtitle">It's been about a month since you completed a key lesson. Let's do a quick memory refresh!</p>
         <div id="review-content"></div>
     </div>
@@ -414,7 +414,7 @@ footer{
         <button class="close-btn" onclick="closeModal('calendar-modal')">✕</button>
         <h2 style="color:var(--accent); margin-bottom:1rem; text-align:center;">Practice Calendar</h2>
         <div class="freeze-badge" id="freeze-display">
-            ❄️ Streak Freezes Available: 0 / 2
+            Streak Freezes Available: 0 / 2
         </div>
         <p style="color:var(--muted); font-size:0.9rem; text-align:center;">Earn 1 freeze for every 2 days you practice (Max 2).</p>
         <div class="calendar-grid" id="calendar-grid-container"></div>
@@ -430,21 +430,21 @@ footer{
         <div style="margin-bottom: 1.5rem;">
             <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">Theme Settings</h3>
             <button style="width:100%; background:var(--border);" onclick="toggleTheme()" id="theme-toggle-btn">
-                Switch to Light Theme ☀️
+                Switch Theme
             </button>
         </div>
 
         <div style="margin-bottom: 1.5rem;">
             <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">About</h3>
-            <a href="https://pengwins.my.canva.site/math-app-about" target="_blank" style="text-decoration:none;">
-                <button style="width:100%;">About Page ↗</button>
+            <a href="https://pengwins.my.canva.site/mathematics-application" target="_blank" style="text-decoration:none;">
+                <button style="width:100%;">About Page</button>
             </a>
         </div>
 
         <div style="margin-bottom: 1rem;">
             <h3 style="margin-bottom:0.75rem; font-size:1.1rem;">Contact & Support</h3>
             <a href="https://pengwins.my.canva.site/contact/" target="_blank" style="text-decoration:none;">
-                <button style="width:100%;">Visit Contact Page ↗</button>
+                <button style="width:100%;">Visit Contact Page</button>
             </a>
         </div>
     </div>
@@ -459,7 +459,7 @@ footer{
     </div>
 </div>
 
-<footer>Mathematics Application</footer>
+<footer>Mathematics Application • Nonprofit app</footer>
 
 <script>
 let understanding = parseInt(localStorage.getItem('pengwinMathUnderstanding')) || 0;
@@ -485,6 +485,13 @@ let lessonStats = (function(){
 let quizLog = [];            
 let answerLocked = false;    
 const MASTERY_SCORE = 4;     
+
+// Daily XP Reset Check
+const todayStr = new Date().toISOString().split('T')[0];
+if (lastDate && lastDate !== todayStr && practiceHistory[todayStr] !== 'practiced') {
+    understanding = 0;
+    localStorage.setItem('pengwinMathUnderstanding', understanding);
+}
 
 const subjects = [
 {
@@ -1042,7 +1049,7 @@ function updateStreak(){
     localStorage.setItem('pengwinMathStreak', streak);
     localStorage.setItem('pengwinMathHistory', JSON.stringify(practiceHistory));
     
-    document.getElementById("streak-counter").textContent = `🔥 ${streak} Day Streak`;
+    document.getElementById("streak-counter").textContent = `Streak: ${streak} Days`;
 }
 
 function confirmConceptSwitch(onConfirm) {
@@ -1077,11 +1084,11 @@ function toggleTheme() {
     localStorage.setItem('pengwinMathTheme', newTheme);
     
     const btn = document.getElementById('theme-toggle-btn');
-    btn.textContent = newTheme === 'light' ? 'Switch to Dark Theme 🌙' : 'Switch to Light Theme ☀️';
+    btn.textContent = newTheme === 'light' ? 'Switch to Dark Theme' : 'Switch to Light Theme';
 }
 
 function openCalendarModal() {
-    document.getElementById('freeze-display').textContent = `❄️ Streak Freezes Available: ${freezes} / 2`;
+    document.getElementById('freeze-display').textContent = `Streak Freezes Available: ${freezes} / 2`;
     
     const grid = document.getElementById('calendar-grid-container');
     grid.innerHTML = '';
@@ -1119,13 +1126,13 @@ function openCalendarModal() {
         const status = practiceHistory[dateStr];
         if (status === 'practiced') {
             dayEl.classList.add('practiced');
-            dayEl.innerHTML = `${d.getDate()}<br><small>✓</small>`;
+            dayEl.innerHTML = `${d.getDate()}<br><small>Yes</small>`;
         } else if (status === 'frozen') {
             dayEl.classList.add('frozen');
-            dayEl.innerHTML = `${d.getDate()}<br><small>❄️</small>`;
+            dayEl.innerHTML = `${d.getDate()}<br><small>Frozen</small>`;
         } else if (status === 'missed' || (d < today && dateStr !== getTodayString())) {
             dayEl.classList.add('missed');
-            dayEl.innerHTML = `${d.getDate()}<br><small>✕</small>`;
+            dayEl.innerHTML = `${d.getDate()}<br><small>Missed</small>`;
         } else {
             dayEl.innerHTML = `${d.getDate()}`;
         }
@@ -1241,8 +1248,8 @@ function showSubjectLessons(subject){
         const isRec = recLesson && recLesson.id === lesson.id;
         card.className = "card" + (isRec ? " recommended" : "");
         let chips = '';
-        if (isRec) chips += `<span class="chip next">★ Recommended</span>`;
-        if (status === 'mastered') chips += `<span class="chip mastered">✓ Mastered · best ${st.best}/5</span>`;
+        if (isRec) chips += `<span class="chip next">Recommended</span>`;
+        if (status === 'mastered') chips += `<span class="chip mastered">Mastered · best ${st.best}/5</span>`;
         else if (status === 'learning') chips += `<span class="chip learning">In progress · best ${st.best}/5</span>`;
         card.innerHTML = `<div style="font-size:2.5rem;font-weight:800;color:var(--accent);">${lesson.id}</div><h2>${lesson.name}</h2><div>${chips}</div>`;
         card.onclick = () => {
@@ -1351,7 +1358,7 @@ function submitCurrentAnswer(){
     const isCorrect = checkAnswerLoose(userAnswer, q.a);
     
     if(isCorrect){
-        feedbackEl.innerHTML = `<span class="success">✅ Correct. Verification match successful.</span>`;
+        feedbackEl.innerHTML = `<span class="success">Correct. Verification match successful.</span>`;
         if(attemptsOnCurrent === 0) correctFirstTry++;
         setTimeout(() => {
             currentQuestionIndex++;
@@ -1360,9 +1367,9 @@ function submitCurrentAnswer(){
     } else {
         attemptsOnCurrent++;
         if(attemptsOnCurrent === 1){
-            feedbackEl.innerHTML = `<span class="error">❌ Calculation mismatch. Structural Hint: ${q.hint}</span>`;
+            feedbackEl.innerHTML = `<span class="error">Calculation mismatch. Structural Hint: ${q.hint}</span>`;
         } else {
-            feedbackEl.innerHTML = `<span class="error">❌ Verification limit reached. Answer is: <strong>${q.a}</strong>. Advancing timeline...</span>`;
+            feedbackEl.innerHTML = `<span class="error">Verification limit reached. Answer is: <strong>${q.a}</strong>. Advancing timeline...</span>`;
             setTimeout(() => {
                 currentQuestionIndex++;
                 loadCurrentQuestion();
@@ -1432,7 +1439,7 @@ function finishQuiz(){
         localStorage.setItem('pengwinMathPracticeDaysCount', practiceDaysCount);
         localStorage.setItem('pengwinMathHistory', JSON.stringify(practiceHistory));
         
-        document.getElementById("streak-counter").textContent = `🔥 ${streak} Day Streak`;
+        document.getElementById("streak-counter").textContent = `Streak: ${streak} Days`;
     }
     
     document.getElementById("lesson-content").innerHTML = `
@@ -1575,7 +1582,7 @@ function submitReviewAnswer(subId, lessonId, correctAns) {
     const val = document.getElementById('review-answer-input').value.trim();
     const feedback = document.getElementById('review-feedback');
     if (checkAnswerLoose(val, correctAns)) {
-        feedback.innerHTML = `<span class="success">✅ Excellent memory! Review passed successfully.</span>`;
+        feedback.innerHTML = `<span class="success">Excellent memory! Review passed successfully.</span>`;
         const key = subId + ':' + lessonId;
         if (lessonStats[key]) {
             lessonStats[key].reviewedRecently = true;
@@ -1584,7 +1591,7 @@ function submitReviewAnswer(subId, lessonId, correctAns) {
         }
         setTimeout(() => closeModal('review-modal'), 2000);
     } else {
-        feedback.innerHTML = `<span class="error">❌ Not quite. The correct answer is ${correctAns}. Keep practicing!</span>`;
+        feedback.innerHTML = `<span class="error">Not quite. The correct answer is ${correctAns}. Keep practicing!</span>`;
         setTimeout(() => closeModal('review-modal'), 2500);
     }
 }
@@ -1661,7 +1668,7 @@ function resetLocalProgress(){
     practiceHistory = {}; lastDate = null; lastLessonDate = '';
     ['pengwinMathLastDate'].forEach(k => localStorage.removeItem(k));
     persistLocal();
-    document.getElementById('streak-counter').textContent = '🔥 0 Day Streak';
+    document.getElementById('streak-counter').textContent = 'Streak: 0 Days';
     updateUnderstanding();
 }
 
@@ -1680,11 +1687,11 @@ function updateAccountUI(){
     const subtitle = document.getElementById('header-subtitle');
     if (!btn) return;
     if (!currentUser) {
-        btn.textContent = 'Log In';
+        btn.textContent = 'Sign in/up';
         if (subtitle) subtitle.textContent = 'Giving you deep understanding';
     } else {
         const username = (currentProfile && currentProfile.username) || 'Account';
-        btn.textContent = '👤 ' + username;
+        btn.textContent = username;
         if (subtitle) subtitle.textContent = `Welcome back, ${username}! • Tailored Math Mastery`;
     }
 }
@@ -1752,12 +1759,12 @@ function renderAuth(view, opts){
         break;
 
     case 'login':
-        t = 'Log In';
+        t = 'Sign In';
         html = `
             <p class="auth-note">Save your streak and progress across devices.</p>
             <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email">
             <input class="auth-input" type="password" id="auth-password" placeholder="Password" autocomplete="current-password" ${enter('authLogin')}>
-            <button style="width:100%;" onclick="authRun(authLogin)">Log In</button>
+            <button style="width:100%;" onclick="authRun(authLogin)">Sign In</button>
             <button class="auth-link" onclick="renderAuth('signup')">New here? Create an account</button>
             <button class="auth-link" style="margin-top:0;" onclick="renderAuth('forgot')">Forgot password?</button>
             <div id="auth-message"></div>`;
@@ -1771,7 +1778,7 @@ function renderAuth(view, opts){
             <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email">
             <input class="auth-input" type="password" id="auth-password" placeholder="Password (min. 8 characters)" autocomplete="new-password" ${enter('authSignUp')}>
             <button style="width:100%;" onclick="authRun(authSignUp)">Create Account</button>
-            <button class="auth-link" onclick="renderAuth('login')">Already have an account? Log in</button>
+            <button class="auth-link" onclick="renderAuth('login')">Already have an account? Sign in</button>
             <div id="auth-message"></div>`;
         break;
 
@@ -1782,7 +1789,7 @@ function renderAuth(view, opts){
             <input class="auth-input code-input" type="text" id="auth-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" ${enter('authVerifySignup')}>
             <button style="width:100%;" onclick="authRun(authVerifySignup)">Confirm</button>
             <button class="auth-link" onclick="authRun(authResendSignup)">Send a new code</button>
-            <button class="auth-link" style="margin-top:0;" onclick="renderAuth('login')">Back to log in</button>
+            <button class="auth-link" style="margin-top:0;" onclick="renderAuth('login')">Back to sign in</button>
             <div id="auth-message"></div>`;
         break;
 
@@ -1792,7 +1799,7 @@ function renderAuth(view, opts){
             <p class="auth-note">Enter your email and we'll send you a code.</p>
             <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email" ${enter('authSendResetCode')}>
             <button style="width:100%;" onclick="authRun(authSendResetCode)">Send Code</button>
-            <button class="auth-link" onclick="renderAuth('login')">Back to log in</button>
+            <button class="auth-link" onclick="renderAuth('login')">Back to sign in</button>
             <div id="auth-message"></div>`;
         break;
 
@@ -1804,7 +1811,7 @@ function renderAuth(view, opts){
             <input class="auth-input" type="password" id="auth-new-password" placeholder="New password (min. 8 characters)" autocomplete="new-password" ${enter('authResetWithCode')}>
             <button style="width:100%;" onclick="authRun(authResetWithCode)">Update Password</button>
             <button class="auth-link" onclick="authRun(authSendResetCode)">Send a new code</button>
-            <button class="auth-link" style="margin-top:0;" onclick="renderAuth('login')">Back to log in</button>
+            <button class="auth-link" style="margin-top:0;" onclick="renderAuth('login')">Back to sign in</button>
             <div id="auth-message"></div>`;
         break;
 
@@ -1891,7 +1898,7 @@ async function authLogin(){
     const email = $v('auth-email').trim();
     const password = $v('auth-password');
     if (!email || !password) { setAuthMessage('Enter your email and password.', 'error'); return; }
-    setAuthMessage('Logging in…');
+    setAuthMessage('Signing in…');
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
         if (/not confirmed/i.test(error.message)) {
@@ -2105,7 +2112,7 @@ window.onload = () => {
     document.documentElement.setAttribute('data-theme', savedTheme);
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) {
-        themeBtn.textContent = savedTheme === 'light' ? 'Switch to Dark Theme 🌙' : 'Switch to Light Theme ☀️';
+        themeBtn.textContent = savedTheme === 'light' ? 'Switch to Dark Theme' : 'Switch to Light Theme';
     }
 
     updateStreak();
