@@ -143,6 +143,15 @@ header h1{ font-size:2.8rem; }
 }
 .close-btn:hover { border-color:var(--accent); color:var(--accent); }
 
+/* Keep lesson header content clear of the absolutely-positioned close button */
+.lesson-header{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:.5rem;
+    margin-bottom:1rem;
+    padding-right:3.5rem;
+}
+#lesson-content > h1:first-child{ padding-right:3.5rem; }
+
 .lesson-section{ margin-bottom:2rem; }
 .lesson-section h3{
     color:var(--accent);
@@ -369,6 +378,7 @@ footer{
                 <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('prealgebra')">Pre-Algebra (Negative numbers, Exponents, Ratios)</button>
                 <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('algebra')">Algebra I (Equations, Slopes, Quadratics)</button>
                 <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('geometry')">Geometry Foundations (Triangles, Areas, Angles)</button>
+                <button class="btn-secondary" style="text-align:left;" onclick="setOnboardLevel('precalculus')">Pre-Calculus (Functions, Trigonometry, Limits)</button>
             </div>
             <div style="display:flex; gap:1rem; justify-content:space-between;">
                 <button class="btn-secondary" onclick="skipOnboarding()">Skip Onboarding</button>
@@ -471,6 +481,7 @@ let lastDate = localStorage.getItem('pengwinMathLastDate');
 let lastLessonDate = localStorage.getItem('pengwinMathLastLessonDate') || '';
 let currentSubject = null;
 let currentLesson = null;
+let currentLessonStep = 1;
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let questionStartTime = 0;
@@ -997,6 +1008,252 @@ const subjects = [
             {q: "What is the tangent of an angle if Opposite equals Adjacent?", a: "1", hint: "Any number divided by itself equals 1."}
          ]}
     ]
+},
+{
+    id: "precalculus",
+    name: "Pre-Calculus",
+    lessons: [
+        {
+            id: 1,
+            name: "Function Composition & Inverses",
+            equation: "(f \\circ g)(x) = f(g(x))",
+            intro: "Combining functions and finding inverse mappings.",
+            fullExplanation: `<p>Function composition applies one function to the output of another. An inverse function reverses the mapping, undoing the original function's operation.</p>`,
+            why: "Modeling multi-stage industrial pipelines, cryptography, computer algorithm layering.",
+            curiosity: "Inverses act like cryptographic encryption and decryption keys.",
+            questions: [
+                {q: "If f(x) = 2x + 3 and g(x) = x², what is f(g(3))?", a: "21", hint: "Evaluate g(3) first: 3² = 9. Then find f(9) = 2(9) + 3."},
+                {q: "If f(x) = 3x - 4, what is the inverse function f⁻¹(x)? (e.g. (x+4)/3)", a: "(x+4)/3", hint: "Set y = 3x - 4, swap x and y, and solve for y."},
+                {q: "If f(x) = x + 5 and g(x) = 2x, what is (f ∘ g)(4)?", a: "13", hint: "g(4) = 8, then f(8) = 8 + 5."},
+                {q: "What is the inverse of f(x) = x / 2?", a: "2x", hint: "Multiply by 2 to undo division by 2."},
+                {q: "If f(x) = x² (for x ≥ 0), what is f⁻¹(16)?", a: "4", hint: "Find the positive number whose square is 16."}
+            ]
+        },
+        {
+            id: 2,
+            name: "Polynomial & Rational Functions",
+            equation: "f(x) = \\frac{P(x)}{Q(x)}",
+            intro: "Analyzing asymptotes, roots, and end behavior.",
+            fullExplanation: `<p>Rational functions feature polynomial fractions. They exhibit vertical asymptotes where denominators equal zero and horizontal asymptotes governed by degree comparisons.</p>`,
+            why: "Electromagnetic field modeling, chemical reaction rates, economic market saturation curves.",
+            curiosity: "Asymptotes represent theoretical limits that curves approach infinitely closely without ever touching.",
+            questions: [
+                {q: "Find the vertical asymptote of f(x) = 1 / (x - 3).", a: "x=3", hint: "Set the denominator equal to zero."},
+                {q: "What is the degree of the polynomial P(x) = 4x^4 - 2x² + 7?", a: "4", hint: "Look at the highest exponent power present."},
+                {q: "Find the x-intercept of f(x) = x - 5.", a: "5", hint: "Set f(x) = 0 and solve for x."},
+                {q: "Does f(x) = (2x²)/(x² + 1) have a horizontal asymptote at y = 2? (Type yes or no)", a: "yes", hint: "When degrees of numerator and denominator match, take the ratio of leading coefficients."},
+                {q: "What is the y-intercept of f(x) = 3x² + 4x - 6?", a: "-6", hint: "Evaluate the function when x = 0."}
+            ]
+        },
+        {
+            id: 3,
+            name: "Exponential & Logarithmic Equations",
+            equation: "\\log_b(x) = y \\iff b^y = x",
+            intro: "Solving exponential and logarithmic growth equations.",
+            fullExplanation: `<p>Logarithms are the inverse operations of exponents. They answer the question: 'To what power must base b be raised to produce x?'</p>`,
+            why: "Richter earthquake magnitude scales, decibel sound intensity, pH chemistry calculations.",
+            curiosity: "John Napier invented logarithms in 1614 to simplify complex astronomical multiplications into additions.",
+            questions: [
+                {q: "Evaluate log₂(8).", a: "3", hint: "2 to what power equals 8?"},
+                {q: "Solve for x: 2^x = 16.", a: "4", hint: "2 × 2 × 2 × 2 = 16."},
+                {q: "Evaluate log₁₀(1000).", a: "3", hint: "10³ = 1000."},
+                {q: "Solve for x: ln(e^5) = x.", a: "5", hint: "Natural log and exponential functions are inverses."},
+                {q: "What is log₅(1)?", a: "0", hint: "Any base raised to the power of 0 equals 1."}
+            ]
+        },
+        {
+            id: 4,
+            name: "Radians & Unit Circle Trigonometry",
+            equation: "\\theta = \\frac{s}{r}",
+            intro: "Measuring angles using arc length and unit circle coordinates.",
+            fullExplanation: `<p>A radian is the angle subtended at the center of a circle by an arc equal in length to the radius. The unit circle maps angle radians to coordinate points (cos θ, sin θ).</p>`,
+            why: "Rotational mechanics, wave physics, astronomy coordinate systems.",
+            curiosity: "There are exactly 2π radians in a full 360-degree circle rotation.",
+            questions: [
+                {q: "Convert 180 degrees to radians in terms of π (e.g. pi).", a: "pi", hint: "180° equals half a circle rotation."},
+                {q: "What is the sine of 30° (or π/6 radians)?", a: "0.5", hint: "The y-coordinate at 30° on the unit circle."},
+                {q: "What is the cosine of 0 radians?", a: "1", hint: "At 0°, the point on the unit circle is (1, 0)."},
+                {q: "Convert 90 degrees to radians (e.g. pi/2).", a: "pi/2", hint: "One-quarter of a full 2π rotation."},
+                {q: "What is the cosine of 180° (π radians)?", a: "-1", hint: "The x-coordinate at the far left of the unit circle."}
+            ]
+        },
+        {
+            id: 5,
+            name: "Trigonometric Graphs & Transformations",
+            equation: "y = a \\sin(bx - c) + d",
+            intro: "Graphing sinusoidal waves with amplitude, period, and phase shifts.",
+            fullExplanation: `<p>Sinusoidal waves model periodic phenomena. Parameter 'a' sets amplitude (height), 'b' affects period (wavelength), 'c' shifts phase horizontally, and 'd' shifts vertically.</p>`,
+            why: "Alternating electrical currents, sound waves, tidal ocean cycles.",
+            curiosity: "Joseph Fourier proved that any periodic wave can be built by summing simple sine and cosine waves.",
+            questions: [
+                {q: "What is the amplitude of y = 3 sin(x)?", a: "3", hint: "The coefficient 'a' determines vertical stretch amplitude."},
+                {q: "What is the period of standard y = sin(x) in radians?", a: "2pi", hint: "The length of one complete wave cycle."},
+                {q: "What is the maximum value of y = 4 cos(x) + 1?", a: "5", hint: "Cosine max is 1; 4(1) + 1 = 5."},
+                {q: "What is the vertical midline shift 'd' in y = 2 sin(x) - 3?", a: "-3", hint: "The constant term shifts the center wave axis."},
+                {q: "What is the period of y = sin(2x)?", a: "pi", hint: "Period formula: 2π / b = 2π / 2."}
+            ]
+        },
+        {
+            id: 6,
+            name: "Trigonometric Identities & Proofs",
+            equation: "\\sin^2\\theta + \\cos^2\\theta = 1",
+            intro: "Fundamental Pythagorean and angle sum trigonometric identities.",
+            fullExplanation: `<p>Trigonometric identities are equations that hold true for all valid angle values. They are used to simplify complex expressions and solve equations.</p>`,
+            why: "Calculus integration techniques, optical physics ray tracing.",
+            curiosity: "Pythagorean trigonometric identities stem directly from the unit circle equation x² + y² = 1.",
+            questions: [
+                {q: "If sin(θ) = 3/5, what is cos²(θ) using sin²θ + cos²θ = 1?", a: "16/25", hint: "1 - (3/5)² = 1 - 9/25 = 16/25."},
+                {q: "What is sin(θ) / cos(θ) equal to?", a: "tan(theta)", hint: "The definition of tangent in terms of sine and cosine."},
+                {q: "What is 1 + tan²(θ) equal to?", a: "sec^2(theta)", hint: "A fundamental Pythagorean trig identity."},
+                {q: "If cos(θ) = 0, what is sin²(θ)?", a: "1", hint: "0² + sin²(θ) = 1."},
+                {q: "What is the reciprocal of sin(θ)?", a: "csc(theta)", hint: "Cosecant is 1 / sin(θ)."}
+            ]
+        },
+        {
+            id: 7,
+            name: "Inverse Trigonometric Functions",
+            equation: "y = \\arcsin(x) \\iff \\sin(y) = x",
+            intro: "Restricting domains to evaluate inverse trig functions.",
+            fullExplanation: `<p>Because trig functions repeat periodically, their inverses require restricted domains (e.g., arcsin restricted to [-π/2, π/2]) to remain valid single-valued functions.</p>`,
+            why: "Robotics arm angle calculations, finding angles from optical sensors.",
+            curiosity: "Inverse trig functions are often denoted with 'arc-' prefixes or superscript '-1' notations.",
+            questions: [
+                {q: "Evaluate arcsin(1) in radians (e.g. pi/2).", a: "pi/2", hint: "What angle has a sine of 1?"},
+                {q: "Evaluate arccos(0) in radians (e.g. pi/2).", a: "pi/2", hint: "What angle has a cosine of 0?"},
+                {q: "Evaluate arctan(0).", a: "0", hint: "What angle has a tangent of 0?"},
+                {q: "What is sin(arcsin(0.5))?", a: "0.5", hint: "Inverse functions undo each other."},
+                {q: "Evaluate arccos(1).", a: "0", hint: "cos(0) = 1."}
+            ]
+        },
+        {
+            id: 8,
+            name: "Vectors in Two Dimensions",
+            equation: "\\vec{v} = \\langle x, y \\rangle",
+            intro: "Representing magnitude and direction with 2D vectors.",
+            fullExplanation: `<p>Vectors possess both magnitude (length) and direction. They can be added component-wise and scaled using scalar multipliers.</p>`,
+            why: "Physics force analysis, computer game velocity calculations, wind navigation.",
+            curiosity: "Vectors form the mathematical foundation for computer graphics and 3D rendering engines.",
+            questions: [
+                {q: "Find the magnitude of vector ⟨3, 4⟩.", a: "5", hint: "Calculate √(3² + 4²)."},
+                {q: "Add vectors ⟨1, 2⟩ and ⟨3, 4⟩.", a: "<4,6>", hint: "Add corresponding x and y components: (1+3, 2+4)."},
+                {q: "Multiply vector ⟨2, -3⟩ by scalar 4.", a: "<8,-12>", hint: "Multiply both components by 4."},
+                {q: "What is the dot product of ⟨1, 2⟩ and ⟨3, 4⟩?", a: "11", hint: "(1×3) + (2×4) = 3 + 8 = 11."},
+                {q: "Are orthogonal vectors perpendicular? (Type yes or no)", a: "yes", hint: "Orthogonal means meeting at a 90-degree right angle."}
+            ]
+        },
+        {
+            id: 9,
+            name: "Complex Numbers & Polar Form",
+            equation: "z = r(\\cos\\theta + i\\sin\\theta)",
+            intro: "Representing complex numbers in trigonometric polar form.",
+            fullExplanation: `<p>Complex numbers a + bi can be expressed in polar form using magnitude r and angle θ, simplifying multiplication and powers via De Moivre's theorem.</p>`,
+            why: "Electrical engineering AC circuit analysis, quantum mechanics wave functions.",
+            curiosity: "Euler's formula e^(iπ) + 1 = 0 connects five fundamental mathematical constants in a single equation.",
+            questions: [
+                {q: "What is i² in standard complex arithmetic?", a: "-1", hint: "The definition of the imaginary unit i."},
+                {q: "Find the magnitude (modulus) of 3 + 4i.", a: "5", hint: "Calculate √(3² + 4²)."},
+                {q: "What is (2 + 3i) + (1 + 4i)?", a: "3+7i", hint: "Combine real parts (2+1) and imaginary parts (3i+4i)."},
+                {q: "What is i³ equal to in simplified terms? (e.g. -i)", a: "-i", hint: "i² × i = -1 × i = -i."},
+                {q: "What is the real part of complex number 7 - 5i?", a: "7", hint: "The non-imaginary component."}
+            ]
+        },
+        {
+            id: 10,
+            name: "Matrices & Linear Systems",
+            equation: "A \\cdot X = B",
+            intro: "Solving linear systems using matrices and determinants.",
+            fullExplanation: `<p>Matrices organize data into rows and columns. Matrix multiplication and determinants allow efficient resolution of multi-variable linear equation systems.</p>`,
+            why: "Computer graphics transformations, economics input-output models, machine learning.",
+            curiosity: "Arthur Cayley developed matrix algebra in 1858 to streamline linear equation computations.",
+            questions: [
+                {q: "Calculate the determinant of 2x2 matrix [[1, 2], [3, 4]].", a: "-2", hint: "(1×4) - (2×3) = 4 - 6 = -2."},
+                {q: "What is the identity matrix size 2x2 top-left entry?", a: "1", hint: "Identity matrices have 1s along the main diagonal."},
+                {q: "Add matrices [[1, 2], [3, 4]] and [[5, 6], [7, 8]]. What is top-left sum entry?", a: "6", hint: "1 + 5 = 6."},
+                {q: "Can you multiply a 2x3 matrix by a 3x2 matrix? (Type yes or no)", a: "yes", hint: "Inner dimensions match (3 = 3)."},
+                {q: "If the determinant of a matrix is 0, does its inverse exist? (Type yes or no)", a: "no", hint: "Singular matrices with zero determinants have no inverse."}
+            ]
+        },
+        {
+            id: 11,
+            name: "Sequences, Series & Induction",
+            equation: "\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}",
+            intro: "Arithmetic/geometric series summation and mathematical induction.",
+            fullExplanation: `<p>Sequences order numbers systematically. Series sum these terms. Mathematical induction proves statements for all natural numbers via base cases and inductive steps.</p>`,
+            why: "Algorithm complexity analysis, financial annuity compounding.",
+            curiosity: "Carl Friedrich Gauss famously summed the integers from 1 to 100 as a schoolboy in seconds.",
+            questions: [
+                {q: "What is the sum of integers from 1 to 10?", a: "55", hint: "Use formula n(n+1)/2 with n = 10."},
+                {q: "Find the 5th term of arithmetic sequence starting at 2 with common difference 3.", a: "14", hint: "2 + 4(3) = 14."},
+                {q: "What is the common ratio of geometric sequence 3, 6, 12, 24?", a: "2", hint: "6 divided by 3 equals 2."},
+                {q: "What is the sum of infinite geometric series 1 + 1/2 + 1/4 + ...?", a: "2", hint: "Formula S = a / (1 - r) = 1 / (1 - 1/2) = 2."},
+                {q: "In mathematical induction, what is the first step called?", a: "base case", hint: "Proving the statement holds for n = 1."}
+            ]
+        },
+        {
+            id: 12,
+            name: "Limits & Introduction to Calculus",
+            equation: "\\lim_{x \\to c} f(x) = L",
+            intro: "Evaluating limits and understanding instantaneous rates of change.",
+            fullExplanation: `<p>Limits describe the behavior of a function as its input approaches a specific value, laying the foundational bedrock for derivatives and integrals in calculus.</p>`,
+            why: "Physics velocity calculations, continuous compounding models, orbital mechanics.",
+            curiosity: "Newton and Leibniz independently developed calculus in the late 17th century.",
+            questions: [
+                {q: "Evaluate limit as x approaches 3 of expression (x²).", a: "9", hint: "Substitute 3 into x²."},
+                {q: "Evaluate limit as x approaches 2 of (3x + 4).", a: "10", hint: "Substitute 2: 3(2) + 4 = 10."},
+                {q: "What does the slope of a secant line approach as the two points merge into one tangent point?", a: "derivative", hint: "Instantaneous rate of change."},
+                {q: "Evaluate limit as x approaches 5 of constant 7.", a: "7", hint: "Constants remain unchanged as x varies."},
+                {q: "What is the limit of 1/x as x approaches infinity?", a: "0", hint: "As denominators grow infinitely large, fractions approach zero."}
+            ]
+        },
+        {
+            id: 13,
+            name: "Conic Sections: Parabolas & Circles",
+            equation: "(x - h)^2 + (y - k)^2 = r^2",
+            intro: "Analyzing circle and parabola equations, foci, and directrices.",
+            fullExplanation: `<p>Conic sections are curves formed by intersecting a plane with a double cone. Circles have constant radius from a center, while parabolas have equidistant points from a focus and directrix.</p>`,
+            why: "Satellite dish parabolic reflectors, telescope optics, radar design.",
+            curiosity: "Parabolic mirrors reflect all incoming parallel rays to a single focal point.",
+            questions: [
+                {q: "What is the radius of circle equation (x - 2)² + (y + 3)² = 25?", a: "5", hint: "The square root of 25."},
+                {q: "What is the center (h, k) of circle (x - 1)² + (y - 4)² = 9?", a: "(1,4)", hint: "Read off h and k values from coordinate terms."},
+                {q: "In y = x², what is the coordinate of the vertex?", a: "(0,0)", hint: "The lowest turning point of the parabola."},
+                {q: "Does a parabola open upward if its leading coefficient is positive? (Type yes or no)", a: "yes", hint: "Positive coefficients produce U-shaped upward parabolas."},
+                {q: "What is the distance from the vertex to the focus of y = (1/4)x²?", a: "1", hint: "For y = ax², focus distance is 1 / (4a)."}
+            ]
+        },
+        {
+            id: 14,
+            name: "Conic Sections: Ellipses & Hyperbolas",
+            equation: "\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1",
+            intro: "Mastering ellipse and hyperbola equations and asymptotes.",
+            fullExplanation: `<p>Ellipses are stretched circles with two focal points where sum of distances is constant. Hyperbolas feature two open branches with linear asymptotes.</p>`,
+            why: "Planetary orbit ellipses (Kepler's laws), GPS hyperbolic navigation positioning.",
+            curiosity: "Earth orbits the Sun in an ellipse with the Sun at one of the two focal points.",
+            questions: [
+                {q: "In ellipse equation x²/25 + y²/16 = 1, what is a²?", a: "25", hint: "The denominator under the x² term."},
+                {q: "What is the major axis length of ellipse x²/25 + y²/16 = 1?", a: "10", hint: "2 times a (where a = √25 = 5)."},
+                {q: "Do hyperbolas have asymptotes? (Type yes or no)", a: "yes", hint: "Hyperbola branches approach diagonal asymptotes as they extend outward."},
+                {q: "What is the sum of distances from any point on an ellipse to its two foci? Constant or variable?", a: "constant", hint: "The defining geometric property of ellipses."},
+                {q: "In x²/9 - y²/16 = 1, is this an ellipse or hyperbola?", a: "hyperbola", hint: "Subtraction between squared fractions defines a hyperbola."}
+            ]
+        },
+        {
+            id: 15,
+            name: "Parametric & Polar Equations",
+            equation: "x = f(t), \\quad y = g(t)",
+            intro: "Graphing curves using parameters and polar coordinates (r, θ).",
+            fullExplanation: `<p>Parametric equations define x and y coordinates in terms of a third variable parameter t (like time). Polar equations define radius r as a function of angle θ.</p>`,
+            why: "Physics projectile trajectories over time, computer animation pathing, spiral galaxy modeling.",
+            curiosity: "Cardioids and rose curves are stunning geometric shapes easily expressed in polar coordinates.",
+            questions: [
+                {q: "If x = t and y = t² for t from 0 to 3, what shape does this parametric curve trace?", a: "parabola", hint: "Substituting t gives y = x²."},
+                {q: "Convert rectangular coordinates (3, 4) to polar radius r.", a: "5", hint: "Calculate √(3² + 4²)."},
+                {q: "In polar coordinates, what represents the angle from the positive x-axis?", a: "theta", hint: "The angle coordinate variable θ."},
+                {q: "If x = cos(t) and y = sin(t), what geometric shape does this trace?", a: "circle", hint: "cos²(t) + sin²(t) = 1."},
+                {q: "What parameter usually represents time in physics parametric equations?", a: "t", hint: "The standard independent time parameter letter."}
+            ]
+        }
+    ]
 }
 ];
 
@@ -1275,25 +1532,90 @@ function backToSubjects(){
     }
 }
 
-function createLessonHTML(lesson){
-    let questionsPreviewHTML = `<div class="lesson-section" style="background:var(--input-bg); padding:1rem; border-radius:12px; border:1px solid var(--border);">
-        <h4 style="color:var(--accent2); margin-bottom:0.5rem;">Lesson Questions Overview</h4><ol style="padding-left:1.2rem;">`;
-    lesson.questions.forEach((qObj) => {
-        questionsPreviewHTML += `<li style="margin-bottom:0.4rem;">${qObj.q}</li>`;
-    });
-    questionsPreviewHTML += `</ol></div>`;
+/* Upgraded Step-by-Step Lesson Interface ("One Thing at a Time") */
+function showLesson(lesson){
+    currentLesson = lesson;
+    currentLessonStep = 1;
+    renderLessonStep();
+    document.getElementById("welcome-screen").style.display = "flex";
+}
 
-    return `
-        <h1 style="color:var(--accent);margin-bottom:0.5rem;">${lesson.name}</h1>
-        <p style="color:var(--muted);">${currentSubject.name} • Lesson Module ${lesson.id}</p>
-        <div class="lesson-section"><h3>Core Concept</h3><p>${lesson.intro}</p></div>
-        <div class="lesson-section"><h3>Key Equation / Diagram Structure</h3><div class="equation">\\(${lesson.equation}\\)</div></div>
-        <div class="lesson-section"><h3>Deep Explanation</h3>${lesson.fullExplanation}</div>
-        <div class="lesson-section"><h3>Why It Matters</h3><p>${lesson.why}</p></div>
-        <div class="lesson-section curiosity"><h3>Curiosity Blueprint</h3><p>${lesson.curiosity}</p></div>
-        ${questionsPreviewHTML}
-        <button class="start-btn" onclick="startQuiz(${lesson.id})">Launch Interactive Validation Quiz →</button>
-    `;
+function renderLessonStep(){
+    const content = document.getElementById("lesson-content");
+    const lesson = currentLesson;
+    
+    if (currentLessonStep === 1) {
+        content.innerHTML = `
+            <div class="lesson-header">
+                <span class="chip next">Step 1 of 3: Core Concept</span>
+                <span style="color:var(--muted); font-size:0.9rem;">${currentSubject.name} • Lesson ${lesson.id}</span>
+            </div>
+            <h1 style="color:var(--accent); margin-bottom:0.5rem;">${lesson.name}</h1>
+            <div class="lesson-section" style="margin-top:1.5rem;">
+                <h3>Core Concept</h3>
+                <p style="font-size:1.1rem; line-height:1.7;">${lesson.intro}</p>
+            </div>
+            <div class="lesson-section">
+                <h3>Key Equation / Structure</h3>
+                <div class="equation">\\(${lesson.equation}\\)</div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:2rem;">
+                <button onclick="currentLessonStep=2; renderLessonStep();">Next: Deep Explanation →</button>
+            </div>
+        `;
+    } else if (currentLessonStep === 2) {
+        content.innerHTML = `
+            <div class="lesson-header">
+                <span class="chip learning">Step 2 of 3: Deep Explanation</span>
+                <span style="color:var(--muted); font-size:0.9rem;">${currentSubject.name} • Lesson ${lesson.id}</span>
+            </div>
+            <h1 style="color:var(--accent); margin-bottom:0.5rem;">${lesson.name}</h1>
+            <div class="lesson-section" style="margin-top:1.5rem;">
+                <h3>Detailed Breakdown</h3>
+                ${lesson.fullExplanation}
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:2rem;">
+                <button class="btn-secondary" onclick="currentLessonStep=1; renderLessonStep();">← Back</button>
+                <button onclick="currentLessonStep=3; renderLessonStep();">Next: Real-World & Curiosity →</button>
+            </div>
+        `;
+    } else if (currentLessonStep === 3) {
+        let previewList = `<ul style="padding-left:1.2rem; margin-top:0.5rem;">`;
+        lesson.questions.forEach(q => { previewList += `<li style="margin-bottom:0.3rem; color:var(--muted);">${q.q}</li>`; });
+        previewList += `</ul>`;
+
+        content.innerHTML = `
+            <div class="lesson-header">
+                <span class="chip mastered">Step 3 of 3: Application & Quiz</span>
+                <span style="color:var(--muted); font-size:0.9rem;">${currentSubject.name} • Lesson ${lesson.id}</span>
+            </div>
+            <h1 style="color:var(--accent); margin-bottom:0.5rem;">${lesson.name}</h1>
+            <div class="lesson-section" style="margin-top:1.5rem;">
+                <h3>Why It Matters</h3>
+                <p>${lesson.why}</p>
+            </div>
+            <div class="lesson-section curiosity">
+                <h3>Curiosity Blueprint</h3>
+                <p>${lesson.curiosity}</p>
+            </div>
+            <div class="lesson-section" style="background:var(--input-bg); padding:1.2rem; border-radius:12px; border:1px solid var(--border);">
+                <h4 style="color:var(--accent2); margin-bottom:0.5rem;">Quiz Preview (5 Verification Checks)</h4>
+                <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.5rem;">Be prepared to solve problems like:</p>
+                ${previewList}
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:2rem; align-items:center;">
+                <button class="btn-secondary" onclick="currentLessonStep=2; renderLessonStep();">← Back</button>
+                <button class="start-btn" style="margin-top:0; width:auto;" onclick="startQuiz(${lesson.id})">Launch Interactive Quiz →</button>
+            </div>
+        `;
+    }
+
+    setTimeout(() => {
+        if (window.MathJax) { 
+            MathJax.typesetClear(); 
+            MathJax.typeset(); 
+        }
+    }, 150);
 }
 
 function startQuiz(lessonId){
@@ -1451,19 +1773,6 @@ function finishQuiz(){
             <button class="next-btn" onclick="closeLesson()" style="width:100%; padding:1rem; margin-top:1rem;">Sync Progress & Close Module</button>
         </div>
     `;
-}
-
-function showLesson(lesson){
-    currentLesson = lesson;
-    document.getElementById("lesson-content").innerHTML = createLessonHTML(lesson);
-    document.getElementById("welcome-screen").style.display = "flex";
-    
-    setTimeout(() => {
-        if (window.MathJax) { 
-            MathJax.typesetClear(); 
-            MathJax.typeset(); 
-        }
-    }, 200);
 }
 
 function closeLesson(){
